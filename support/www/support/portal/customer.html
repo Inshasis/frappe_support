@@ -23,15 +23,15 @@
 	<section class='section section-padding bg-light'>
 		<div class='container' style='max-width: 50rem'>
 			{% if view=="login" %}
-				{% include "support/templates/includes/login.html" %}
+				{% include "support/templates/includes/customer/login.html" %}
 			{% elif view=="list" %}
-				{% include "support/templates/includes/ticket-list.html" %}
+				{% include "support/templates/includes/customer/ticket-list.html" %}
 			{% elif view=="new" %}
-				{% include "support/templates/includes/new-ticket.html" %}
+				{% include "support/templates/includes/customer/new-ticket.html" %}
 			{% elif view=="form" %}
-				{% include "support/templates/includes/ticket.html" %}
+				{% include "support/templates/includes/customer/ticket.html" %}
 			{% elif view=="register" %}
-				{% include "support/templates/includes/register.html" %}
+				{% include "support/templates/includes/customer/register.html" %}
 			{% endif %}
 		</div>
 	</section>
@@ -40,17 +40,17 @@
 
 {%- block script %}
 		<script>
-		{% if view=="login" %}
-			{% include "support/templates/includes/login.js" %}
-		{% elif view=="register" %}
-			{% include "support/templates/includes/register.js" %}
-		{% elif view=="list" %}
-			{% include "support/templates/includes/ticket_list.js" %}
-		{% elif view=="form" %}
-			{% include "support/templates/includes/ticket.js" %}
-		{% elif view=="new" %}
-			{% include "support/templates/includes/new_ticket.js" %}
-		{% endif %}
+			{% if view=="login" %}
+				{% include "support/templates/includes/customer/login.js" %}
+			{% elif view=="register" %}
+				{% include "support/templates/includes/customer/register.js" %}
+			{% elif view=="list" %}
+				{% include "support/templates/includes/customer/ticket_list.js" %}
+			{% elif view=="form" %}
+				{% include "support/templates/includes/customer/ticket.js" %}
+			{% elif view=="new" %}
+				{% include "support/templates/includes/customer/new_ticket.js" %}
+			{% endif %}
 		</script>
 {% endblock -%}
 

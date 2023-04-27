@@ -1,0 +1,55 @@
+<div class="mb-5 text-center">
+  <a href="/support/portal/customer/issues">← Back to all issues</a>
+</div>
+<div class="frappe-card p-0">
+  <div class="support-header px-5 pt-5 d-flex justify-content-between">
+    <div class="flex">
+      <div>
+        <h5 class="subject pr-2 mb-1" style="font-weight: bold"></h5>
+        <div class="sla-info text-muted small mb-0"></div>
+        <div class="raised-by-info text-muted small mb-0"></div>
+      </div>
+    </div>
+    <div
+      style="
+				min-width: 10rem;
+				display: flex;
+				flex-direction: column;
+				align-items: end;
+			"
+    >
+      <div
+        class="indicator-pill mb-1 float-right"
+        style="max-width: fit-content"
+      >
+        <span class="status"> </span>
+      </div>
+      <div
+        class="text-muted issue-name text-right"
+        style="margin-top: 1px"
+      ></div>
+    </div>
+  </div>
+  <hr />
+  <div class="thread">
+    <div class="issue-body px-5 pb-5">
+      <div
+        contenteditable="true"
+        class="form-control input-reply"
+        style="min-height: 8rem; overflow: auto"
+        placeholder="Add a reply..."
+      ></div>
+      <div class="text-muted my-2">
+        To add images, drag and drop or copy+paste them in the description box
+      </div>
+      <div class="pt-2 d-flex justify-content-between align-items-center">
+        <div>
+          <button class="btn btn-sm small btn-reply">Reply</button>
+          <button class="btn btn-sm small btn-close ml-2">Close Issue</button>
+        </div>
+        <div class="text-muted site-name text-right"></div>
+      </div>
+    </div>
+    <div class="replies px-5"></div>
+  </div>
+</div>

@@ -1,43 +1,22 @@
 # Copyright (c) 2022, Frappe Technologies Pvt. Ltd. and Contributors
 # GNU GPLv3 License. See license.txt
 
-from __future__ import unicode_literals
-
 import frappe
 
-no_cache = 1
 
 
-def get_context(context):
-    path_to_view = {
-        "support/portal/issues/new": "new",
-        "support/portal/issues": "list",
-        "support/portal/issue": "form",
-        "support/portal/register": "register",
-        "support/portal": "login",
-    }
-    for path, view in path_to_view.items():
-        if path in frappe.local.path:
-            context.view = view
-            break
-
-
-@frappe.whitelist(allow_guest=True)
-def send_session_key(email):
-    support_user_exists = frappe.db.exists("Supported Site User", {"email": email})
-
-    if not support_user_exists:
-        return False
-
-    if frappe.db.exists("Support Session", {"email": email}):
-        session_key = frappe.db.get_value("Support Session", {"email": email}, "key")
-    else:
+def get_or_create_session_key(email):
+    session_key = frappe.db.get_value("Support Session", {"email": email}, "key")
+    if not session_key:
         session_key = frappe.utils.generate_hash()
         session_doc = frappe.new_doc("Support Session")
         session_doc.email = email
         session_doc.key = session_key
         session_doc.insert(ignore_permissions=True)
+    return session_key
 
+
+def send_session_key_email(email, session_key):
     if not frappe.conf.get("developer_mode"):
         frappe.sendmail(
             recipients=[email],
@@ -50,12 +29,20 @@ def send_session_key(email):
             now=True,
         )
 
+
+@frappe.whitelist(allow_guest=True)
+def send_session_key(email):
+    support_user_exists = frappe.db.exists("Supported Site User", {"email": email})
+    if not support_user_exists:
+        return False
+    session_key = get_or_create_session_key(email)
+    send_session_key_email(email, session_key)
     return True
 
 
 @frappe.whitelist(allow_guest=True)
 def validate_session_key(key):
-    return frappe.db.exists("Support Session", {"key": key})
+    return frappe.db.get_value("Support Session", {"key": key}, "email")
 
 
 @frappe.whitelist(allow_guest=True)

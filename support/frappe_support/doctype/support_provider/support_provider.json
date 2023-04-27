@@ -19,8 +19,17 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2023-04-26 20:53:39.480925",
+ "links": [
+  {
+   "link_doctype": "Supported Site",
+   "link_fieldname": "support_provider"
+  },
+  {
+   "link_doctype": "Support Provider Team",
+   "link_fieldname": "support_provider"
+  }
+ ],
+ "modified": "2023-04-28 01:26:46.742199",
  "modified_by": "Administrator",
  "module": "Frappe Support",
  "name": "Support Provider",
@@ -42,5 +51,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }

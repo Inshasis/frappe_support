@@ -1,25 +1,29 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:site_name",
- "creation": "2023-04-26 16:16:07.712952",
+ "creation": "2023-04-27 17:43:46.575047",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "site_name",
+  "team_name",
   "support_provider",
-  "support_users"
+  "members"
  ],
  "fields": [
   {
-   "fieldname": "site_name",
+   "fieldname": "team_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Site Name",
-   "reqd": 1,
-   "unique": 1
+   "label": "Team Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "members",
+   "fieldtype": "Table",
+   "label": "Members",
+   "options": "Support Team Member"
   },
   {
    "fieldname": "support_provider",
@@ -27,21 +31,14 @@
    "label": "Support Provider",
    "options": "Support Provider",
    "reqd": 1
-  },
-  {
-   "fieldname": "support_users",
-   "fieldtype": "Table",
-   "label": "Support Users",
-   "options": "Supported Site User"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-04-28 01:27:52.707490",
+ "modified": "2023-04-28 01:27:09.420943",
  "modified_by": "Administrator",
  "module": "Frappe Support",
- "name": "Supported Site",
- "naming_rule": "By fieldname",
+ "name": "Support Provider Team",
  "owner": "Administrator",
  "permissions": [
   {
@@ -61,5 +58,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "title_field": "site_name"
+ "title_field": "team_name",
+ "track_changes": 1
 }

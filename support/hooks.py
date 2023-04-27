@@ -8,7 +8,14 @@ app_email = "developers@frappe.io"
 app_license = "AGPLv3"
 
 website_route_rules = [
-	{"from_route": "/support/portal/<path:app_path>", "to_route": "/support/portal"},
+    {
+        "from_route": "/support/portal/agent/<path:app_path>",
+        "to_route": "/support/portal/agent",
+    },
+    {
+        "from_route": "/support/portal/customer/<path:app_path>",
+        "to_route": "/support/portal/customer",
+    },
 ]
 
 # Includes in <head>

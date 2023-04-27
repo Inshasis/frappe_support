@@ -1,0 +1,27 @@
+{% extends "templates/base.html" %}
+
+{% block head_include %}
+  <script src="/assets/support/js/vue.global.js"></script>
+{% endblock %}
+
+{% block navbar %}
+{% endblock %}
+
+{% block content %}
+  <div id="app"></div>
+{% endblock %}
+
+{%- block script -%}
+  <script type="module">
+    import AgentPortal from "/assets/support/js/agent_portal/AgentPortal.js";
+
+    frappe.ready(() => {
+      const { createApp } = Vue;
+      const app = createApp(AgentPortal);
+      app.mount("#app");
+    });
+  </script>
+{%- endblock -%}
+
+{% block footer %}
+{% endblock %}
