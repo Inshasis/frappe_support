@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-04-26 16:16:07.712952",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "site_name",
+  "support_provider",
+  "support_users"
+ ],
+ "fields": [
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Site Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "support_provider",
+   "fieldtype": "Link",
+   "label": "Support Provider",
+   "options": "Support Provider",
+   "reqd": 1
+  },
+  {
+   "fieldname": "support_users",
+   "fieldtype": "Table",
+   "label": "Support Users",
+   "options": "Supported Site User"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-04-26 23:02:39.804037",
+ "modified_by": "Administrator",
+ "module": "Frappe Support",
+ "name": "Supported Site",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "site_name"
+}

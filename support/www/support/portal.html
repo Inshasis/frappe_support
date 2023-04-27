@@ -1,0 +1,59 @@
+{% extends "templates/base.html" %}
+
+{% block title %}
+	{% if view=="login" %}
+		Login - Frappe Support
+	{% elif view=="register" %}
+		Register - Frappe Support
+	{% elif view=="list" %}
+		Tickets - Frappe Support
+	{% elif view=="form" %}
+		Ticket - Frappe Support
+	{% elif view=="new" %}
+		New Ticket - Frappe Support
+	{% endif %}
+{% endblock %}
+
+{% block navbar %}
+{% endblock %}
+
+
+{% block content %}
+<div class="w-full bg-light py-6" style="min-height: 100vh; height: fit-content;">
+	<section class='section section-padding bg-light'>
+		<div class='container' style='max-width: 50rem'>
+			{% if view=="login" %}
+				{% include "support/templates/includes/login.html" %}
+			{% elif view=="list" %}
+				{% include "support/templates/includes/ticket-list.html" %}
+			{% elif view=="new" %}
+				{% include "support/templates/includes/new-ticket.html" %}
+			{% elif view=="form" %}
+				{% include "support/templates/includes/ticket.html" %}
+			{% elif view=="register" %}
+				{% include "support/templates/includes/register.html" %}
+			{% endif %}
+		</div>
+	</section>
+</div>
+{% endblock %}
+
+{%- block script %}
+		<script>
+		{% if view=="login" %}
+			{% include "support/templates/includes/login.js" %}
+		{% elif view=="register" %}
+			{% include "support/templates/includes/register.js" %}
+		{% elif view=="list" %}
+			{% include "support/templates/includes/ticket_list.js" %}
+		{% elif view=="form" %}
+			{% include "support/templates/includes/ticket.js" %}
+		{% elif view=="new" %}
+			{% include "support/templates/includes/new_ticket.js" %}
+		{% endif %}
+		</script>
+{% endblock -%}
+
+
+{% block footer %}
+{% endblock %}

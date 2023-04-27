@@ -7,6 +7,10 @@ app_description = "A simple support app"
 app_email = "developers@frappe.io"
 app_license = "AGPLv3"
 
+website_route_rules = [
+	{"from_route": "/support/portal/<path:app_path>", "to_route": "/support/portal"},
+]
+
 # Includes in <head>
 # ------------------
 

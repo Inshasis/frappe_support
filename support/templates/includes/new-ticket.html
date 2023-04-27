@@ -1,0 +1,61 @@
+<div class="mb-5 text-center">
+	<a href="/support/portal/issues">← Back to all issues</a>
+</div>
+<div class="frappe-card p-5">
+	<div class="flex" style="justify-content: space-between; align-items: center">
+		<h3 class="mb-1 mt-0">Raise a Ticket</h3>
+		<button class="btn btn-primary btn-submit btn-sm">Submit</button>
+	</div>
+
+	<div class="my-5">
+		<label style="font-size: 14px">Subject</label>
+		<input
+			class="form-control input-subject"
+			placeholder="Add a subject"
+			required
+		/>
+	</div>
+	<div class="my-5">
+		<label style="font-size: 14px">Site</label>
+		<!-- <input
+			class="form-control input-sitename"
+			placeholder="e.g. example.erpnext.com"
+			required
+		/> -->
+		<select class="form-control input-site">
+			<option value="" selected>Select a site</option>
+		</select>
+	</div>
+	<div class="my-5">
+		<label style="font-size: 14px">Description</label>
+		<div
+			contenteditable="true"
+			class="form-control input-description"
+			style="min-height: 20rem; overflow: auto"
+			data-ph="Describe your issue"
+		></div>
+		<div class="text-muted my-1">
+			To add images, drag and drop or copy+paste them in the description box
+		</div>
+	</div>
+	<div class="flex my-5" style="justify-content: space-between">
+		<div style="width: 49%">
+			<label style="font-size: 14px">Ref Doc</label>
+			<select class="form-control ref-doctype">
+				<option value="" selected>e.g. DocType</option>
+				<option value="DocType">DocType</option>
+				<option value="Report">Report</option>
+				<option value="Page">Page</option>
+			</select>
+		</div>
+		<div style="width: 49%">
+			<label style="font-size: 14px">Ref Module</label>
+			<select class="form-control ref-module">
+				<option value="" selected>e.g. Accounts</option>
+				{% for module in modules %}
+				<option value="{{ module }}">{{ module }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+</div>
