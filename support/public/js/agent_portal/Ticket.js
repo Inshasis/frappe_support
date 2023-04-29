@@ -81,15 +81,17 @@ const template = /*html*/ `
 				</div>
 			</div>
 		</div>
-		<hr />
-		<div class="flex flex-col replies flex-1 p-5 overflow-y-scroll overflow-x-hidden w-full space-y-6">
-			<div class="relative flex items-start space-x-3 w-full" v-for='reply in ticket.replies' :key='reply.name'>
-				<div class="relative">
+	</div>
+	<div class="flex pl-10 h-fit">
+		<div class="flex flex-col replies flex-1 overflow-y-scroll w-full space-y-6 border-l p-6">
+			<div class="relative flex items-start w-full frappe-card" v-for='reply in ticket.replies' :key='reply.name'>
+				<div class="absolute z-10 top-4 -left-6 w-6 border-t"></div>
+				<div class="relative mr-3">
 					<div class="h-8 w-8 cursor-default rounded-full ring-2 ring-white flex items-center justify-center text-sm uppercase" :title="reply.sender_full_name" :class="reply.sent_or_received == 'Sent' ? 'bg-blue-50' : 'bg-green-50'">
 						{{ reply.sender_full_name[0] }}
 					</div>
 				</div>
-				<div class="min-w-0 flex-1 rounded-md border px-3 py-2">
+				<div class="min-w-0 flex-1 ">
 					<div class="flex items-center space-x-1">
 						<span class="font-medium text-gray-800 text-sm"> {{reply.sender_full_name}} </span>
 						<span>&#149;</span>
