@@ -1,6 +1,6 @@
 const template = /*html*/ `
 <div class="d-flex" style="flex-direction: column; height: 100%">
-  <h3 class="mb-1 mt-0">Your Tickets</h3>
+  <h3 class="mb-1 mt-0 text-xl font-bold">Your Tickets</h3>
   <p class="mb-3 text-muted small">You are logged in as {{ agent.email }}</p>
   <div class="d-flex justify-content-between">
     <div
@@ -38,6 +38,15 @@ const template = /*html*/ `
           <option value="Close">Show Close</option>
         </select>
       </div>
+      <div class="btn btn-default btn-sm btn-select-filter mr-3" style="height: fit-content">
+        <select
+          v-model="assignment_filter"
+          style="border: none; background: transparent; outline: none"
+        >
+          <option value="me" selected>Assigned to me</option>
+          <option value="all">Assigned to all</option>
+        </select>
+      </div>
     </div>
   </div>
   <div v-if="!agent.email" class="frappe-card p-0">
@@ -55,16 +64,33 @@ const template = /*html*/ `
       @click="open_ticket(ticket)"
     >
       <div class='d-flex justify-content-between p-3'>
-          <div>
-              <div class="h6">{{ticket.subject}}</div>
-              <span class="text-muted">{{ticket.name}}</span> &#149;
-              <span class='text-muted' :title="ticket.creation">{{ticket.creation_from_now}}</span>
-          </div>
-          <div class='d-flex flex-column align-items-end'>
+          <div class="flex flex-col">
+            <div class="flex items-center space-x-2">
+              <div class="font-bold">{{ticket.subject}}</div>
               <span class='indicator-pill pull-right' :class=[ticket.indicator]>
                 <span>{{ticket.status}}</span>
               </span>
-              <span class='text-muted mt-1'>{{ticket.site_name}}</span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <span class="text-muted text-sm">{{ticket.name}}</span>
+              <span>&#149;</span>
+              <span class='text-muted text-sm' :title="ticket.creation">{{ticket.creation_from_now}}</span>
+            </div>
+          </div>
+          <div class="d-flex items-center space-x-4">
+            <div class="flex -space-x-0.5">
+              <dd v-for="assignee in ticket.assignees" :key="assignee">
+                <div class="h-8 w-8 rounded-full bg-green-50 ring-2 ring-white flex items-center justify-center text-sm uppercase" :title="assignee">
+                  {{ assignee[0] }}
+                </div>
+              </dd>
+            </div>
+            <div class="text-sm space-x-1">
+              <svg class="icon icon-sm text-muted">
+                <use href="#icon-comment"></use>
+              </svg>
+              <span>{{ticket.comments.length}}</span>
+            </div>
           </div>
       </div>
     </div>
@@ -85,26 +111,38 @@ export default {
 		const app = inject("app");
 
 		const agent = computed(() => app.agent);
+		const state = reactive({
+			search_text: "",
+			status_filter: "Open",
+			assignment_filter: "me",
+		});
 
 		const tickets = computed(() => {
 			if (!agent.value.tickets) return [];
 			return agent.value.tickets
-				.filter((ticket) => {
-					if (state.status_filter === "All") return true;
-					return ticket.status === state.status_filter;
-				})
 				.map((ticket) => {
 					return {
 						...ticket,
 						status: utils.get_status(ticket.status),
 						indicator: utils.get_indicator_color(ticket.status),
 						creation_from_now: utils.get_time_ago(ticket.creation),
+						assignees: JSON.parse(ticket._assign || "[]"),
+						comments: JSON.parse(ticket._comments || "[]"),
 					};
+				})
+				.filter((ticket) => {
+					const conditions = [true];
+					if (state.status_filter === "Open") {
+						conditions.push(ticket.status !== "Closed");
+					}
+					if (state.status_filter === "Close") {
+						conditions.push(ticket.status === "Closed");
+					}
+					if (state.assignment_filter === "me") {
+						conditions.push(ticket.assignees.includes(agent.value.email));
+					}
+					return conditions.every(Boolean);
 				});
-		});
-		const state = reactive({
-			search_text: "",
-			status_filter: "Open",
 		});
 
 		return {

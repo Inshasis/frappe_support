@@ -35,7 +35,33 @@ def get_agent(session_key):
     if not email:
         frappe.throw("Invalid Session Key")
 
-    tickets = frappe.get_all(
+    SupportProvider = frappe.qb.DocType("Support Provider")
+    SupportProviderTeam = frappe.qb.DocType("Support Provider Team")
+    SupportTeamMember = frappe.qb.DocType("Support Team Member")
+
+    agent = (
+        frappe.qb.from_(SupportProvider)
+        .inner_join(SupportProviderTeam)
+        .on(SupportProvider.name == SupportProviderTeam.support_provider)
+        .inner_join(SupportTeamMember)
+        .on(SupportProviderTeam.name == SupportTeamMember.parent)
+        .select(
+            SupportProvider.name.as_("support_provider"),
+            SupportProviderTeam.team_name.as_("team"),
+            SupportTeamMember.user.as_("email"),
+        )
+        .where(SupportTeamMember.user == email)
+        .run(as_dict=True)
+    )
+    if not agent:
+        frappe.throw(
+            "You have not been registered as an agent. Reach out to your administrator to get registered.",
+            title="Not Registered",
+        )
+
+    agent = agent[0]
+
+    agent.tickets = frappe.get_all(
         "Issue",
         fields=[
             "name",
@@ -45,20 +71,18 @@ def get_agent(session_key):
             "modified",
             "creation",
             "site_name",
+            "_assign",
+            "_comments",
         ],
-        filters={"_assign": ["like", f'%"{email}"%']},
+        filters={"support_provider": agent.support_provider},
         order_by="creation desc",
     )
-
-    return {"email": email, "tickets": tickets}
+    return agent
 
 
 @frappe.whitelist(allow_guest=True)
 def get_ticket(session_key, issue_name):
-    email = validate_session_key(session_key)
-    if not email:
-        frappe.throw("Invalid Session Key")
-
+    agent = get_agent(session_key)
     Issue = frappe.qb.DocType("Issue")
     issue = (
         frappe.qb.from_(Issue)
@@ -70,7 +94,10 @@ def get_ticket(session_key, issue_name):
             Issue.raised_by,
             Issue.site_name,
         )
-        .where((Issue.name == issue_name) & (Issue._assign.like(f'%"{email}"%')))
+        .where(
+            (Issue.name == issue_name)
+            & (Issue.support_provider == agent.support_provider)
+        )
         .run(as_dict=True)
     )
     if not issue:
@@ -104,15 +131,15 @@ def get_replies(issue_name):
 
 @frappe.whitelist(allow_guest=True)
 def reply_to_ticket(session_key, issue_name, content):
-    email = validate_session_key(session_key)
-    if not email:
-        frappe.throw("Invalid Session Key")
-
+    agent = get_agent(session_key)
     Issue = frappe.qb.DocType("Issue")
     issue = (
         frappe.qb.from_(Issue)
         .select(Issue.name)
-        .where((Issue.name == issue_name) & (Issue._assign.like(f'%"{email}"%')))
+        .where(
+            (Issue.name == issue_name)
+            & (Issue.support_provider == agent.support_provider)
+        )
         .run(as_dict=True)
     )
     if not issue:
@@ -128,7 +155,7 @@ def reply_to_ticket(session_key, issue_name, content):
         content=content,
         doctype="Issue",
         name=issue_name,
-        sender=email,
+        sender=agent.email,
         print_html="",
         send_me_a_copy=0,
         print_format="",
