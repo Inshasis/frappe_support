@@ -40,6 +40,7 @@ def get_agents(session_key):
     SupportProvider = frappe.qb.DocType("Support Provider")
     SupportProviderTeam = frappe.qb.DocType("Support Provider Team")
     SupportTeamMember = frappe.qb.DocType("Support Team Member")
+    User = frappe.qb.DocType("User")
 
     agents = (
         frappe.qb.from_(SupportProvider)
@@ -47,10 +48,14 @@ def get_agents(session_key):
         .on(SupportProvider.name == SupportProviderTeam.support_provider)
         .inner_join(SupportTeamMember)
         .on(SupportProviderTeam.name == SupportTeamMember.parent)
+        .inner_join(User)
+        .on(SupportTeamMember.user == User.name)
         .select(
             SupportProvider.name.as_("support_provider"),
             SupportProviderTeam.team_name.as_("team"),
             SupportTeamMember.user.as_("email"),
+            SupportTeamMember.disabled,
+            User.full_name,
         )
         .run(as_dict=True)
     )
@@ -58,7 +63,7 @@ def get_agents(session_key):
 
 
 @frappe.whitelist(allow_guest=True)
-def get_agent(session_key):
+def get_agent(session_key, agent_email=None, with_tickets=True):
     email = validate_session_key(session_key)
     if not email:
         frappe.throw("Invalid Session Key")
@@ -66,6 +71,7 @@ def get_agent(session_key):
     SupportProvider = frappe.qb.DocType("Support Provider")
     SupportProviderTeam = frappe.qb.DocType("Support Provider Team")
     SupportTeamMember = frappe.qb.DocType("Support Team Member")
+    User = frappe.qb.DocType("User")
 
     agent = (
         frappe.qb.from_(SupportProvider)
@@ -73,12 +79,17 @@ def get_agent(session_key):
         .on(SupportProvider.name == SupportProviderTeam.support_provider)
         .inner_join(SupportTeamMember)
         .on(SupportProviderTeam.name == SupportTeamMember.parent)
+        .inner_join(User)
+        .on(SupportTeamMember.user == User.name)
         .select(
             SupportProvider.name.as_("support_provider"),
-            SupportProviderTeam.team_name.as_("team"),
+            SupportProviderTeam.name.as_("team"),
+            SupportProviderTeam.team_name.as_("team_name"),
             SupportTeamMember.user.as_("email"),
+            SupportTeamMember.disabled,
+            User.full_name,
         )
-        .where(SupportTeamMember.user == email)
+        .where(SupportTeamMember.user == (agent_email or email))
         .run(as_dict=True)
     )
     if not agent:
@@ -88,6 +99,9 @@ def get_agent(session_key):
         )
 
     agent = agent[0]
+
+    if not with_tickets:
+        return agent
 
     agent.tickets = frappe.get_all(
         "Issue",
@@ -106,6 +120,60 @@ def get_agent(session_key):
         order_by="creation desc",
     )
     return agent
+
+
+@frappe.whitelist(allow_guest=True)
+def add_agent(session_key, email):
+    agent = get_agent(session_key)
+
+    if frappe.db.exists("Support Team Member", {"user": email, "parent": agent.team}):
+        frappe.msgprint("Agent already exists.", alert=True)
+        return
+
+    if not frappe.db.exists("User", email):
+        frappe.msgprint("User does not exist.", alert=True)
+        return
+
+    user = frappe.get_doc("User", email)
+    user.add_roles("Support Provider")
+    agent_doc = frappe.get_doc("Support Provider Team", agent.team)
+    agent_doc.append("members", {"user": email})
+    agent_doc.save()
+
+    return get_agent(session_key, email, with_tickets=False)
+
+
+@frappe.whitelist(allow_guest=True)
+def remove_agent(session_key, email):
+    agent = get_agent(session_key)
+
+    if not frappe.db.exists(
+        "Support Team Member", {"user": email, "parent": agent.team}
+    ):
+        frappe.throw("Agent does not exist.")
+
+    user = frappe.get_doc("User", email)
+    user.remove_roles("Support Provider")
+    agent_doc = frappe.get_doc("Support Provider Team", agent.team)
+    for member in agent_doc.members:
+        if member.user == email:
+            agent_doc.remove(member)
+            break
+    agent_doc.save()
+
+
+@frappe.whitelist(allow_guest=True)
+def disable_agent(session_key, email):
+    agent = get_agent(session_key)
+
+    if not frappe.db.exists(
+        "Support Team Member", {"user": email, "parent": agent.team}
+    ):
+        frappe.throw("Agent does not exist.")
+
+    frappe.db.set_value(
+        "Support Team Member", {"user": email, "parent": agent.team}, "disabled", 1
+    )
 
 
 @frappe.whitelist(allow_guest=True)

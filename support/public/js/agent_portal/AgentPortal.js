@@ -8,6 +8,7 @@ const template = /*html*/ `
 				<Login v-if="view === 'login'" />
 				<Tickets v-if="view === 'tickets'" />
 				<Ticket v-if="view === 'ticket'" />
+				<Settings v-if="view === 'settings'" />
 			</div>
 		</section>
 	</div>
@@ -62,6 +63,33 @@ const utils = {
 			.then((res) => res.message);
 	},
 
+	add_agent(session_key, email) {
+		return frappe
+			.call({
+				method: utils.get_api_url("add_agent"),
+				args: { session_key, email },
+			})
+			.then((res) => res.message);
+	},
+
+	remove_agent(session_key, email) {
+		return frappe
+			.call({
+				method: utils.get_api_url("remove_agent"),
+				args: { session_key, email },
+			})
+			.then((res) => res.message);
+	},
+
+	disable_agent(session_key, email) {
+		return frappe
+			.call({
+				method: utils.get_api_url("disable_agent"),
+				args: { session_key, email },
+			})
+			.then((res) => res.message);
+	},
+
 	fetch_agents(session_key) {
 		return frappe
 			.call({
@@ -106,6 +134,7 @@ const utils = {
 const VIEW_TO_ROUTE = {
 	ticket: "/support/portal/agent/tickets?ticket=",
 	tickets: "/support/portal/agent/tickets",
+	settings: "/support/portal/agent/settings",
 	login: "/support/portal/agent",
 };
 
@@ -132,6 +161,7 @@ function get_state_from_url() {
 import Login from "/assets/support/js/agent_portal/Login.js";
 import Ticket from "/assets/support/js/agent_portal/Ticket.js";
 import Tickets from "/assets/support/js/agent_portal/Tickets.js";
+import Settings from "/assets/support/js/agent_portal/Settings.js";
 const { reactive, toRefs, provide } = Vue;
 
 export default {
@@ -142,6 +172,7 @@ export default {
 		Login,
 		Tickets,
 		Ticket,
+		Settings,
 	},
 
 	setup() {
@@ -205,7 +236,7 @@ export default {
 			if (state.open_ticket) {
 				state.set_route("ticket", { ticket: state.open_ticket });
 			} else {
-				state.set_route("tickets");
+				state.set_route(state.view);
 			}
 		}
 

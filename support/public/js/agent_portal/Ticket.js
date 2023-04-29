@@ -82,7 +82,7 @@ const template = /*html*/ `
 			</div>
 		</div>
 		<hr />
-		<div class="flex flex-col replies flex-1 p-5 overflow-y-scroll overflow-x-hidden w-full">
+		<div class="flex flex-col replies flex-1 p-5 overflow-y-scroll overflow-x-hidden w-full space-y-6">
 			<div class="relative flex items-start space-x-3 w-full" v-for='reply in ticket.replies' :key='reply.name'>
 				<div class="relative">
 					<div class="h-8 w-8 cursor-default rounded-full ring-2 ring-white flex items-center justify-center text-sm uppercase" :title="reply.sender_full_name" :class="reply.sent_or_received == 'Sent' ? 'bg-blue-50' : 'bg-green-50'">

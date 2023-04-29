@@ -95,7 +95,9 @@ const template = /*html*/ `
       </div>
     </div>
   </div>
-  <div class="mt-6 text-center">
+  <div class="mt-6 text-center space-x-1">
+    <a href="#" @click="open_settings">Settings</a>
+    <span>&#149;</span>
     <a href="#" @click="logout">Logout</a>
   </div>
 </div>
@@ -150,6 +152,7 @@ export default {
 			tickets,
 			...toRefs(state),
 			logout: () => app.logout(),
+      open_settings: () => app.set_route("settings"),
 			open_ticket: (ticket) => app.set_route("ticket", { ticket: ticket.name }),
 		};
 	},
