@@ -3,6 +3,8 @@
 
 import frappe
 from frappe.core.doctype.communication.email import make as create_communication
+from frappe.desk.form.assign_to import add as add_assign
+from frappe.desk.form.assign_to import remove as remove_assign
 from support.www.support.portal import (
     get_or_create_session_key,
     send_session_key_email,
@@ -27,6 +29,32 @@ def send_login_link(email):
 
     session_key = get_or_create_session_key(email)
     send_session_key_email(email, session_key)
+
+
+@frappe.whitelist(allow_guest=True)
+def get_agents(session_key):
+    email = validate_session_key(session_key)
+    if not email:
+        frappe.throw("Invalid Session Key")
+
+    SupportProvider = frappe.qb.DocType("Support Provider")
+    SupportProviderTeam = frappe.qb.DocType("Support Provider Team")
+    SupportTeamMember = frappe.qb.DocType("Support Team Member")
+
+    agents = (
+        frappe.qb.from_(SupportProvider)
+        .inner_join(SupportProviderTeam)
+        .on(SupportProvider.name == SupportProviderTeam.support_provider)
+        .inner_join(SupportTeamMember)
+        .on(SupportProviderTeam.name == SupportTeamMember.parent)
+        .select(
+            SupportProvider.name.as_("support_provider"),
+            SupportProviderTeam.team_name.as_("team"),
+            SupportTeamMember.user.as_("email"),
+        )
+        .run(as_dict=True)
+    )
+    return agents
 
 
 @frappe.whitelist(allow_guest=True)
@@ -93,6 +121,7 @@ def get_ticket(session_key, issue_name):
             Issue.resolution_by,
             Issue.raised_by,
             Issue.site_name,
+            Issue._assign,
         )
         .where(
             (Issue.name == issue_name)
@@ -181,3 +210,39 @@ def reply_to_ticket(session_key, issue_name, content):
         as_dict=True,
     )
     return reply
+
+
+@frappe.whitelist(allow_guest=True)
+def toggle_assignee(session_key, issue_name, assignee):
+    agent = get_agent(session_key)
+    Issue = frappe.qb.DocType("Issue")
+    issue = (
+        frappe.qb.from_(Issue)
+        .select(Issue.name, Issue._assign, Issue.subject)
+        .where(
+            (Issue.name == issue_name)
+            & (Issue.support_provider == agent.support_provider)
+        )
+        .run(as_dict=True)
+    )
+    if not issue:
+        frappe.throw(
+            "You do not have access to this ticket. Please contact your system administrator.",
+            title="No Access",
+        )
+
+    issue = issue[0]
+    if assignee not in issue._assign:
+        add_assign(
+            {
+                "assign_to": [assignee],
+                "doctype": "Issue",
+                "name": issue_name,
+                "description": issue.subject,
+            }
+        )
+
+    else:
+        remove_assign("Issue", issue_name, assignee)
+
+    return frappe.db.get_value("Issue", issue_name, "_assign")

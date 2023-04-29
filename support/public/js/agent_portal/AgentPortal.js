@@ -1,10 +1,10 @@
 const template = /*html*/ `
 	<div
-		class="w-full bg-light py-6"
-		style="min-height: 50rem; height: 100vh"
+		class="w-full bg-light"
+		style="min-height: 100vh; height: 50rem;"
 	>
-		<section class="section section-padding bg-light" style="height: 100%">
-			<div class="container" style="max-width: 50rem; height: 100%">
+		<section class="section section-padding bg-light h-full">
+			<div class="container h-full" style="max-width: 50rem">
 				<Login v-if="view === 'login'" />
 				<Tickets v-if="view === 'tickets'" />
 				<Ticket v-if="view === 'ticket'" />
@@ -62,6 +62,15 @@ const utils = {
 			.then((res) => res.message);
 	},
 
+	fetch_agents(session_key) {
+		return frappe
+			.call({
+				method: utils.get_api_url("get_agents"),
+				args: { session_key },
+			})
+			.then((res) => res.message);
+	},
+
 	fetch_ticket(session_key, ticket) {
 		return frappe
 			.call({
@@ -77,6 +86,13 @@ const utils = {
 			args: { session_key, issue_name: ticket, content },
 		}).then((res) => res.message);
 	},
+
+	toggle_assignee(session_key, ticket, assignee) {
+		return frappe.call({
+			method: utils.get_api_url("toggle_assignee"),
+			args: { session_key, issue_name: ticket, assignee },
+		}).then((res) => res.message);
+	}
 };
 
 
