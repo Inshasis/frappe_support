@@ -14,7 +14,7 @@ const template = /*html*/ `
 						</span>
 					</div>
 					<div class="flex items-center space-x-1">
-						<span class="text-muted text-sm">Raised by {{ticket.raised_by}}</span>
+						<span class="text-muted text-sm">{{ticket.raised_by}}</span>
 						<span>&#149;</span>
 						<span class='text-muted text-sm'>{{ticket.site_name}}</span>
 					</div>
@@ -59,16 +59,33 @@ const template = /*html*/ `
 			</div>
 			<div class="pt-2 d-flex justify-content-between align-items-center">
 				<div>
+					<div class="btn btn-default btn-sm mr-3" style="height: fit-content">
+						<select
+							v-model="ticket.status"
+							style="border: none; background: transparent; outline: none"
+							@change="set_status"
+						>
+							<option v-for="status in statuses" :key="status" :value="status">
+								{{ status }}
+							</option>
+						</select>
+					</div>
 					<button class="btn btn-sm small btn-reply" @click="reply">Reply</button>
 				</div>
-				
+				<div class="flex items-center space-x-1">
+					<span class="text-muted text-sm">Response </span>
+					<span class="text-muted text-sm">{{ticket.response_status}}</span>
+					<span>&#149;</span>
+					<span class="text-muted text-sm">Resolution </span>
+					<span class="text-muted text-sm">{{ticket.resolution_status}}</span>
+				</div>
 			</div>
 		</div>
 		<hr />
 		<div class="flex flex-col replies flex-1 p-5 overflow-y-scroll overflow-x-hidden w-full">
-			<div class="relative flex items-start space-x-3 pb-8 w-full" v-for='reply in ticket.replies' :key='reply.name'>
+			<div class="relative flex items-start space-x-3 w-full" v-for='reply in ticket.replies' :key='reply.name'>
 				<div class="relative">
-					<div class="h-8 w-8 cursor-default rounded-full ring-2 ring-white flex items-center justify-center text-sm uppercase" :title="assignee" :class="reply.sent_or_received == 'Sent' ? 'bg-blue-50' : 'bg-green-50'">
+					<div class="h-8 w-8 cursor-default rounded-full ring-2 ring-white flex items-center justify-center text-sm uppercase" :title="reply.sender_full_name" :class="reply.sent_or_received == 'Sent' ? 'bg-blue-50' : 'bg-green-50'">
 						{{ reply.sender_full_name[0] }}
 					</div>
 				</div>
@@ -76,7 +93,7 @@ const template = /*html*/ `
 					<div class="flex items-center space-x-1">
 						<span class="font-medium text-gray-800 text-sm"> {{reply.sender_full_name}} </span>
 						<span>&#149;</span>
-						<span class='text-muted text-sm'> {{reply.creation_from_now}} </p>
+						<span class='text-muted text-sm'> {{reply.creation_from_now}} </span>
 					</div>
 					<div class="text-sm text-gray-700">
 						<p>{{reply.content}}</p>
@@ -101,8 +118,9 @@ export default {
 		const ticket = frappe.utils.get_url_arg("ticket");
 
 		const state = reactive({
-			ticket: { name: ticket },
 			agents: [],
+			ticket: { name: ticket },
+			statuses: ["Open", "Replied", "Closed"],
 		});
 
 		utils.fetch_agents(app.session_key).then((agents) => {
@@ -122,25 +140,67 @@ export default {
 							: "var(--gray-100)";
 					reply.creation_from_now = utils.get_time_ago(reply.creation);
 				});
-				set_resolution_from_now();
+				set_sla_details();
 			})
 			.catch((err) => {
 				console.log(err);
 				if (err.message.includes("Invalid Session")) app.logout();
 			});
 
-		function set_resolution_from_now() {
-			if (
-				!state.ticket.resolution_by ||
-				["Closed", "Resolved"].includes(state.ticket.status)
-			) {
-				return;
+		function set_sla_details() {
+			const ticket = state.ticket;
+			const now = moment();
+			const response_by = moment(ticket.response_by);
+			const resolution_by = moment(ticket.resolution_by);
+			if (!ticket.first_responded_on) {
+				ticket.response_time = response_by.from(now, true);
+				ticket.response_status = now.isAfter(response_by)
+					? "Delayed"
+					: "On Time";
 			}
-			const diff = moment(state.ticket.resolution_by).diff(moment());
-			if (diff >= 44500) {
-				state.ticket.resolution_from_now = utils.get_time_ago(
-					state.ticket.resolution_by
+
+			if (!ticket.resolution_on) {
+				ticket.resolution_time = resolution_by.from(now, true);
+				ticket.resolution_status = now.isAfter(resolution_by)
+					? "Delayed"
+					: "On Time";
+			}
+
+			if (ticket.first_responded_on) {
+				const first_responded_on = moment(ticket.first_responded_on);
+				const response_fullfilled_time = first_responded_on.from(
+					response_by,
+					true
 				);
+				ticket.response_time = response_fullfilled_time;
+				ticket.response_status = first_responded_on.isAfter(response_by)
+					? "Delayed"
+					: "On Time";
+			}
+
+			if (ticket.resolution_on) {
+				const resolution_on = moment(ticket.resolution_on);
+				const resolution_fullfilled_time = resolution_on.from(
+					resolution_by,
+					true
+				);
+				ticket.resolution_time = resolution_fullfilled_time;
+				ticket.resolution_status = resolution_on.isAfter(resolution_by)
+					? "Delayed"
+					: "On Time";
+			}
+
+			if (ticket.response_status == "Delayed") {
+				ticket.response_status = `${ticket.response_status} by ${ticket.response_time}`;
+			}
+			if (ticket.resolution_status == "Delayed") {
+				ticket.resolution_status = `${ticket.resolution_status} by ${ticket.resolution_time}`;
+			}
+			if (ticket.response_status == "On Time") {
+				ticket.response_status = `${ticket.response_status} (${ticket.response_time})`;
+			}
+			if (ticket.resolution_status == "On Time") {
+				ticket.resolution_status = `${ticket.resolution_status} (${ticket.resolution_time})`;
 			}
 		}
 
@@ -169,6 +229,13 @@ export default {
 			...toRefs(state),
 			reply,
 			back: () => app.set_route("tickets"),
+			set_status: () =>
+				utils
+					.set_status(app.session_key, ticket, state.ticket.status)
+					.then((status) => {
+						state.ticket.status = status;
+						state.ticket.indicator = utils.get_indicator_color(status);
+					}),
 			assign: (email) => {
 				utils
 					.toggle_assignee(app.session_key, ticket, email)

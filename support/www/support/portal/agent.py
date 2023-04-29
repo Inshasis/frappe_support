@@ -118,6 +118,9 @@ def get_ticket(session_key, issue_name):
             Issue.name,
             Issue.status,
             Issue.subject,
+            Issue.response_by,
+            Issue.first_responded_on,
+            Issue.resolution_date.as_("resolution_on"),
             Issue.resolution_by,
             Issue.raised_by,
             Issue.site_name,
@@ -246,3 +249,28 @@ def toggle_assignee(session_key, issue_name, assignee):
         remove_assign("Issue", issue_name, assignee)
 
     return frappe.db.get_value("Issue", issue_name, "_assign")
+
+
+@frappe.whitelist(allow_guest=True)
+def set_status(session_key, issue_name, status):
+    agent = get_agent(session_key)
+    Issue = frappe.qb.DocType("Issue")
+    issue = (
+        frappe.qb.from_(Issue)
+        .select(Issue.name)
+        .where(
+            (Issue.name == issue_name)
+            & (Issue.support_provider == agent.support_provider)
+        )
+        .run(as_dict=True)
+    )
+    if not issue:
+        frappe.throw(
+            "You do not have access to this ticket. Please contact your system administrator.",
+            title="No Access",
+        )
+
+    issue = frappe.get_doc("Issue", issue_name)
+    issue.status = status
+    issue.save()
+    return issue.status

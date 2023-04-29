@@ -92,6 +92,13 @@ const utils = {
 			method: utils.get_api_url("toggle_assignee"),
 			args: { session_key, issue_name: ticket, assignee },
 		}).then((res) => res.message);
+	},
+
+	set_status(session_key, ticket, status) {
+		return frappe.call({
+			method: utils.get_api_url("set_status"),
+			args: { session_key, issue_name: ticket, status },
+		}).then((res) => res.message);
 	}
 };
 
