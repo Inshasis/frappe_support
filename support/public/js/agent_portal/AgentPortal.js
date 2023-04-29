@@ -86,7 +86,8 @@ const VIEW_TO_ROUTE = {
 	login: "/support/portal/agent",
 };
 
-function load_state_from_url() {
+function get_state_from_url() {
+	const state = {}
 	let view = "login";
 	Object.keys(VIEW_TO_ROUTE).some((v) => {
 		if (window.location.pathname.startsWith(VIEW_TO_ROUTE[v])) {
@@ -94,11 +95,14 @@ function load_state_from_url() {
 			return true;
 		}
 	});
+	state.view = view;
 	const session_key = frappe.utils.get_url_arg("key");
 	session_key && utils.store_session_key(session_key);
+	session_key && (state.session_key = session_key)
 
 	const open_ticket = frappe.utils.get_url_arg("ticket");
-	return { view, session_key, open_ticket };
+	open_ticket && (state.open_ticket = open_ticket)
+	return state;
 }
 
 
@@ -120,11 +124,10 @@ export default {
 	setup() {
 		provide("utils", utils);
 
-		const url_state = load_state_from_url();
 		const state = reactive({
 			initializing: true,
-			view: url_state.view || "login",
-			session_key: url_state.session_key,
+			view: "login",
+			session_key: null,
 			agent: {},
 		});
 
@@ -145,7 +148,12 @@ export default {
 			state.view = view;
 		};
 
+		addEventListener("popstate", () => {
+			route_based_on_url();
+		});
+
 		async function initialize() {
+			if (!state.session_key) state.session_key = get_state_from_url().session_key;
 			if (!state.session_key) state.session_key = utils.get_session_key();
 			if (!state.session_key) {
 				state.initializing = false;
@@ -158,11 +166,7 @@ export default {
 				.then((agent) => {
 					state.agent = agent;
 					state.initializing = false;
-					if (url_state.open_ticket) {
-						state.set_route("ticket", { ticket: url_state.open_ticket });
-					} else {
-						state.set_route("tickets");
-					}
+					route_based_on_url();
 				})
 				.catch((err) => {
 					console.error(err);
@@ -170,6 +174,17 @@ export default {
 				});
 		}
 		initialize();
+
+		function route_based_on_url() {
+			const url_state = get_state_from_url();
+			state.view = url_state.view;
+			state.open_ticket = url_state.open_ticket;
+			if (state.open_ticket) {
+				state.set_route("ticket", { ticket: state.open_ticket });
+			} else {
+				state.set_route("tickets");
+			}
+		}
 
 		state.logout = function () {
 			utils.store_session_key();

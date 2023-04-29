@@ -1,7 +1,7 @@
 const template = /*html*/ `
 <div class="d-flex" style="flex-direction: column; height: 100%">
 	<div class="mb-5 text-center">
-		<a href="" @click="back">← Back to all issues</a>
+		<a href="#" @click="back">← Back to all issues</a>
 	</div>
 	<div class="frappe-card p-0">
 		<div class="support-header px-5 pt-5 d-flex justify-content-between">
