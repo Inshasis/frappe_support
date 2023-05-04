@@ -1,32 +1,35 @@
 {% extends "templates/base.html" %}
 
 {% block head_include %}
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="/assets/support/js/vue.global.js"></script>
-  <style>
-    body {
-      background-color: var(--bg-color);
-    }
-  </style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="/assets/support/js/vue.global.js"></script>
+<style>
+	body {
+		background-color: var(--bg-color);
+	}
+</style>
 {% endblock %}
 
 {% block navbar %}
 {% endblock %}
 
 {% block content %}
-  <div id="app"></div>
+<div id="app"></div>
 {% endblock %}
 
 {%- block script -%}
-  <script type="module">
-    import AgentPortal from "/assets/support/js/agent_portal/AgentPortal.js";
-
-    frappe.ready(() => {
-      const { createApp } = Vue;
-      const app = createApp(AgentPortal);
-      app.mount("#app");
-    });
-  </script>
+<script type="module">
+	import * as Vue from "/assets/support/js/vue.esm-browser.prod.js";
+	window.Vue = Vue;
+	frappe.ready(() => {
+    // wait till vue is loaded
+    const AgentPortal = Vue.defineAsyncComponent(() =>
+      import("/assets/support/js/agent_portal/AgentPortal.js")
+    );
+		const app = Vue.createApp(AgentPortal);
+		app.mount("#app");
+	});
+</script>
 {%- endblock -%}
 
 {% block footer %}
