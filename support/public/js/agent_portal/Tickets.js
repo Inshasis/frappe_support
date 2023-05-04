@@ -38,7 +38,7 @@ const template = /*html*/ `
           <option value="Close">Show Close</option>
         </select>
       </div>
-      <div class="btn btn-default btn-sm btn-select-filter mr-3" style="height: fit-content">
+      <div class="btn btn-default btn-sm btn-select-filter" style="height: fit-content">
         <select
           v-model="assignment_filter"
           style="border: none; background: transparent; outline: none"
