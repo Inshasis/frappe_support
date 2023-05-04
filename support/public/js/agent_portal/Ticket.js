@@ -1,7 +1,7 @@
 const template = /*html*/ `
 <div class="flex flex-col pb-10">
 	<div class="mb-5 text-center">
-		<a href="#" @click="back">← Back to all issues</a>
+		<router-link :to="{ name: 'tickets' }">← Back to all issues</router-link>
 	</div>
 	<div class="flex flex-col frappe-card p-0 flex-1">
 		<div class="p-5 d-flex justify-content-between items-center">
@@ -111,13 +111,13 @@ const { reactive, toRefs, inject, computed, ref } = Vue;
 export default {
 	name: "Ticket",
 	template: template,
+	props: { ticket: String },
 
-	setup() {
+	setup({ ticket }) {
 		const utils = inject("utils");
 		const app = inject("app");
 
 		const agent = computed(() => app.agent);
-		const ticket = frappe.utils.get_url_arg("ticket");
 
 		const state = reactive({
 			agents: [],
@@ -230,7 +230,6 @@ export default {
 			reply_content,
 			...toRefs(state),
 			reply,
-			back: () => app.set_route("tickets"),
 			set_status: () =>
 				utils
 					.set_status(app.session_key, ticket, state.ticket.status)

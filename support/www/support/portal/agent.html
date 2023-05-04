@@ -27,6 +27,9 @@
       import("/assets/support/js/agent_portal/AgentPortal.js")
     );
 		const app = Vue.createApp(AgentPortal);
+		app.component("router-link", Vue.defineAsyncComponent(() =>
+			import("/assets/support/js/agent_portal/RouterLink.js")
+		));
 		app.mount("#app");
 	});
 </script>

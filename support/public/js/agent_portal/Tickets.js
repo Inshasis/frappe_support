@@ -56,12 +56,12 @@ const template = /*html*/ `
     <div class="text-center" style="padding: 5rem">No tickets found</div>
   </div>
   <div v-else class="frappe-card p-0" style="flex-grow: 1; overflow-y: auto; overflow-x: hidden">
-    <div
+    <router-link
       v-for="ticket in tickets"
       :key="ticket.name"
       style="cursor: pointer"
       class='border-bottom'
-      @click="open_ticket(ticket)"
+      :to="{ name: 'ticket', params: { ticket: ticket.name } }"
     >
       <div class='d-flex justify-content-between p-3'>
           <div class="flex flex-col">
@@ -93,12 +93,12 @@ const template = /*html*/ `
             </div>
           </div>
       </div>
-    </div>
+    </router-link>
   </div>
   <div class="mt-6 text-center space-x-1">
-    <a href="#" @click="open_settings">Settings</a>
+    <router-link :to="{ name: 'settings' }">Settings</router-link>
     <span>&#149;</span>
-    <a href="#" @click="logout">Logout</a>
+    <a href="#" @click.prevent.stop="logout">Logout</a>
   </div>
 </div>
 `;
@@ -152,8 +152,6 @@ export default {
 			tickets,
 			...toRefs(state),
 			logout: () => app.logout(),
-      open_settings: () => app.set_route("settings"),
-			open_ticket: (ticket) => app.set_route("ticket", { ticket: ticket.name }),
 		};
 	},
 };

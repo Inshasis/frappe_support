@@ -1,7 +1,7 @@
 const template = /*html*/ `
 <div v-if="app" class="d-flex" style="flex-direction: column; height: 100%">
 	<div class="mb-5 text-center">
-		<a href="#" @click="back">← Back to all issues</a>
+		<router-link :to="{ name: 'tickets' }">← Back to all issues</router-link>
 	</div>
 	<div class="flex justify-between items-center">
   	<h3 class="mb-3 mt-0 text-xl font-bold">Manage Agents</h3>
@@ -139,7 +139,6 @@ export default {
 
 		return {
 			app,
-			back: () => app.set_route("tickets"),
 			show_add_agent_modal,
 			disable_agent,
 			remove_agent,

@@ -41,9 +41,6 @@ export default {
 	template: template,
 
 	setup() {
-		const utils = inject("utils");
-		const app = inject("app");
-
 		const state = reactive({
 			email: "",
 			loginLinkSent: false,
@@ -55,6 +52,7 @@ export default {
 			return regex.test(state.email);
 		}
 
+		const utils = inject("utils");
 		async function send_login_link() {
 			if (!verify_email()) {
 				frappe.show_alert("Please enter a valid email address");
@@ -66,8 +64,10 @@ export default {
 			state.loginLinkSent = true;
 		}
 
+		const app = inject("app");
+		const router = inject("router");
 		if (app.session_key) {
-			app.set_route("tickets");
+			router.push({ name: "tickets" });
 		}
 
 		return {
