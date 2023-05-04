@@ -17,6 +17,7 @@ const template = /*html*/ `
         <button
           class="start-btn btn btn-primary btn-validate btn-sm ml-2"
           @click="send_login_link"
+          :disabled="!verify_email() || sending"
         >
           Login
         </button>
@@ -41,20 +42,38 @@ export default {
 
 	setup() {
 		const utils = inject("utils");
+		const app = inject("app");
 
 		const state = reactive({
 			email: "",
 			loginLinkSent: false,
+			sending: false,
 		});
 
+		function verify_email() {
+			const regex = /\S+@\S+\.\S+/;
+			return regex.test(state.email);
+		}
+
 		async function send_login_link() {
+			if (!verify_email()) {
+				frappe.show_alert("Please enter a valid email address");
+				return;
+			}
+			state.sending = true;
 			await utils.send_login_link(state.email);
+			state.sending = false;
 			state.loginLinkSent = true;
+		}
+
+		if (app.session_key) {
+			app.set_route("tickets");
 		}
 
 		return {
 			...toRefs(state),
 			send_login_link,
-		}
+			verify_email,
+		};
 	},
 };
