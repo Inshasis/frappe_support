@@ -63,11 +63,11 @@ const utils = {
 			.then((res) => res.message);
 	},
 
-	add_agent(session_key, email) {
+	add_agent(session_key, new_agent) {
 		return frappe
 			.call({
 				method: utils.get_api_url("add_agent"),
-				args: { session_key, email },
+				args: { session_key, new_agent },
 			})
 			.then((res) => res.message);
 	},

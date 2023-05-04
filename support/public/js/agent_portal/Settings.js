@@ -73,9 +73,25 @@ export default {
 			const dialog = frappe.msgprint(
 				`<div class="form-group">
 					<div class="clearfix">
+						<label class="text-sm" style="padding-right: 0px;">First Name</label>
+					</div>
+					<div class="control-input-wrapper mb-4">
+						<div class="control-input">
+							<input type="text" autocomplete="off" class="firstname-input input-with-feedback form-control" maxlength="140" data-fieldtype="Data" data-fieldname="firstname" placeholder="eg. John">
+						</div>
+					</div>
+					<div class="clearfix">
+						<label class="text-sm" style="padding-right: 0px;">Last Name</label>
+					</div>
+					<div class="control-input-wrapper mb-4">
+						<div class="control-input">
+							<input type="text" autocomplete="off" class="lastname-input input-with-feedback form-control" maxlength="140" data-fieldtype="Data" data-fieldname="lastname" placeholder="eg. Doe">
+						</div>
+					</div>
+					<div class="clearfix">
 						<label class="text-sm" style="padding-right: 0px;">Email</label>
 					</div>
-					<div class="control-input-wrapper">
+					<div class="control-input-wrapper mb-4">
 						<div class="control-input">
 							<input type="text" autocomplete="off" class="email-input input-with-feedback form-control" maxlength="140" data-fieldtype="Data" data-fieldname="email" placeholder="eg. user@example.com">
 						</div>
@@ -84,13 +100,15 @@ export default {
 				<div class="flex justify-end">
 					<button type="button" class="btn btn-primary btn-sm add-btn">Add</button>
 				</div>`,
-				"Add Agent",
-			)
+				"Add Agent"
+			);
 
 			dialog.$wrapper.find(".add-btn").on("click", () => {
 				const email = dialog.$wrapper.find(".email-input").val();
-				if (!email) {
-					frappe.toast("Email is required");
+				const firstname = dialog.$wrapper.find(".firstname-input").val();
+				const lastname = dialog.$wrapper.find(".lastname-input").val();
+				if (!email || !firstname || !lastname) {
+					frappe.toast("All fields are required.");
 					return;
 				}
 				const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -98,13 +116,13 @@ export default {
 					frappe.toast("Invalid Email");
 					return;
 				}
-				utils.add_agent(app.session_key, email).then((agent) => {
+				const new_agent = { email, firstname, lastname };
+				utils.add_agent(app.session_key, new_agent).then((agent) => {
 					if (!agent) return;
 					state.agents.push(agent);
 					dialog.hide();
-				})
+				});
 			});
-
 		}
 
 		function disable_agent(agent) {
@@ -126,6 +144,6 @@ export default {
 			disable_agent,
 			remove_agent,
 			...toRefs(state),
-		}
+		};
 	},
 };

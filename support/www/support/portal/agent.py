@@ -123,19 +123,25 @@ def get_agent(session_key, agent_email=None, with_tickets=True):
 
 
 @frappe.whitelist(allow_guest=True)
-def add_agent(session_key, email):
+def add_agent(session_key, new_agent):
     agent = get_agent(session_key)
 
+    new_agent = frappe.parse_json(new_agent)
+    email = new_agent.get("email")
     if frappe.db.exists("Support Team Member", {"user": email, "parent": agent.team}):
         frappe.msgprint("Agent already exists.", alert=True)
         return
 
-    if not frappe.db.exists("User", email):
-        frappe.msgprint("User does not exist.", alert=True)
-        return
+    new_user = frappe.get_doc({
+        "doctype": "User",
+        "email": email,
+        "first_name": new_agent.get("firstname"),
+        "last_name": new_agent.get("lastname"),
+        "send_welcome_email": 0,
+        "user_type": "Website User",
+    })
+    new_user.insert(ignore_permissions=True)
 
-    user = frappe.get_doc("User", email)
-    user.add_roles("Support Provider")
     agent_doc = frappe.get_doc("Support Provider Team", agent.team)
     agent_doc.append("members", {"user": email})
     agent_doc.save()
@@ -146,6 +152,8 @@ def add_agent(session_key, email):
 @frappe.whitelist(allow_guest=True)
 def remove_agent(session_key, email):
     agent = get_agent(session_key)
+    if agent.email == email:
+        frappe.throw("You cannot remove yourself.")
 
     if not frappe.db.exists(
         "Support Team Member", {"user": email, "parent": agent.team}
@@ -165,6 +173,8 @@ def remove_agent(session_key, email):
 @frappe.whitelist(allow_guest=True)
 def disable_agent(session_key, email):
     agent = get_agent(session_key)
+    if agent.email == email:
+        frappe.throw("You cannot disable yourself.")
 
     if not frappe.db.exists(
         "Support Team Member", {"user": email, "parent": agent.team}
