@@ -10,6 +10,7 @@ from support.www.support.portal import (
     send_session_key_email,
     validate_session_key,
 )
+from frappe.query_builder.functions import Count
 
 no_cache = 1
 
@@ -352,3 +353,83 @@ def set_status(session_key, issue_name, status):
     issue.status = status
     issue.save()
     return issue.status
+
+
+@frappe.whitelist(allow_guest=True)
+def add_site(session_key, new_site):
+    agent = get_agent(session_key)
+
+    new_site = frappe.parse_json(new_site)
+    site_name = new_site.get("site_name")
+    if support_provider := frappe.db.get_value("Supported Site", site_name, "support_provider"):
+        if support_provider != agent.support_provider:
+            frappe.throw("Site already exists and is supported by another provider.")
+        else:
+            frappe.throw("Site already exists.")
+        
+
+    new_site = frappe.new_doc("Supported Site")
+    new_site.site_name = site_name
+    new_site.support_provider = agent.support_provider
+    new_site.save(ignore_permissions=True)
+
+    return get_site(session_key, site_name)
+
+
+@frappe.whitelist(allow_guest=True)
+def remove_site(session_key, site_name):
+    agent = get_agent(session_key)
+    site = get_site(session_key, site_name)
+    if site.support_provider != agent.support_provider:
+        frappe.throw("You do not have access to this site.")
+
+    frappe.delete_doc("Supported Site", site_name, ignore_permissions=True)
+
+@frappe.whitelist(allow_guest=True)
+def get_site(session_key, site_name):
+    agent = get_agent(session_key)
+    
+    SupportedSite = frappe.qb.DocType("Supported Site")
+    SupportedSiteUser = frappe.qb.DocType("Supported Site User")
+    site = (
+        frappe.qb.from_(SupportedSite)
+        .select(
+            SupportedSite.site_name,
+            SupportedSite.support_provider,
+            Count(SupportedSiteUser.name).as_("user_count"),
+        )
+        .left_join(SupportedSiteUser)
+        .on(SupportedSiteUser.parent == SupportedSite.name)
+        .where(
+            (SupportedSite.site_name == site_name)
+            & (SupportedSite.support_provider == agent.support_provider)
+        )
+        .groupby(SupportedSite.site_name)
+        .run(as_dict=True)
+    )
+    if not site:
+        frappe.throw("You do not have access to this site.")
+
+    site = site[0]
+    return site
+    
+
+@frappe.whitelist(allow_guest=True)
+def get_sites(session_key):
+    agent = get_agent(session_key)
+    SupportedSite = frappe.qb.DocType("Supported Site")
+    SupportedSiteUser = frappe.qb.DocType("Supported Site User")
+    sites = (
+        frappe.qb.from_(SupportedSite)
+        .select(
+            SupportedSite.site_name,
+            SupportedSite.support_provider,
+            Count(SupportedSiteUser.name).as_("user_count"),
+        )
+        .left_join(SupportedSiteUser)
+        .on(SupportedSiteUser.parent == SupportedSite.name)
+        .where(SupportedSite.support_provider == agent.support_provider)
+        .groupby(SupportedSite.site_name)
+        .run(as_dict=True)
+    )
+    return sites

@@ -135,6 +135,42 @@ const utils = {
 			})
 			.then((res) => res.message);
 	},
+
+	add_site(session_key, new_site) {
+		return frappe
+			.call({
+				method: utils.get_api_url("add_site"),
+				args: { session_key, new_site },
+			})
+			.then((res) => res.message);
+	},
+
+	remove_site(session_key, site_name) {
+		return frappe
+			.call({
+				method: utils.get_api_url("remove_site"),
+				args: { session_key, site_name },
+			})
+			.then((res) => res.message);
+	},
+
+	disable_site(session_key, site_name) {
+		return frappe
+			.call({
+				method: utils.get_api_url("disable_site"),
+				args: { session_key, site_name },
+			})
+			.then((res) => res.message);
+	},
+
+	fetch_sites(session_key) {
+		return frappe
+			.call({
+				method: utils.get_api_url("get_sites"),
+				args: { session_key },
+			})
+			.then((res) => res.message);
+	},
 };
 
 function get_session_key() {
