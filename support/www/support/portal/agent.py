@@ -5,12 +5,13 @@ import frappe
 from frappe.core.doctype.communication.email import make as create_communication
 from frappe.desk.form.assign_to import add as add_assign
 from frappe.desk.form.assign_to import remove as remove_assign
+from frappe.query_builder.functions import Count
 from support.www.support.portal import (
+    delete_session_key,
     get_or_create_session_key,
     send_session_key_email,
     validate_session_key,
 )
-from frappe.query_builder.functions import Count
 
 no_cache = 1
 
@@ -133,14 +134,16 @@ def add_agent(session_key, new_agent):
         frappe.msgprint("Agent already exists.", alert=True)
         return
 
-    new_user = frappe.get_doc({
-        "doctype": "User",
-        "email": email,
-        "first_name": new_agent.get("firstname"),
-        "last_name": new_agent.get("lastname"),
-        "send_welcome_email": 0,
-        "user_type": "Website User",
-    })
+    new_user = frappe.get_doc(
+        {
+            "doctype": "User",
+            "email": email,
+            "first_name": new_agent.get("firstname"),
+            "last_name": new_agent.get("lastname"),
+            "send_welcome_email": 0,
+            "user_type": "Website User",
+        }
+    )
     new_user.insert(ignore_permissions=True)
 
     agent_doc = frappe.get_doc("Support Provider Team", agent.team)
@@ -361,12 +364,13 @@ def add_site(session_key, new_site):
 
     new_site = frappe.parse_json(new_site)
     site_name = new_site.get("site_name")
-    if support_provider := frappe.db.get_value("Supported Site", site_name, "support_provider"):
+    if support_provider := frappe.db.get_value(
+        "Supported Site", site_name, "support_provider"
+    ):
         if support_provider != agent.support_provider:
             frappe.throw("Site already exists and is supported by another provider.")
         else:
             frappe.throw("Site already exists.")
-        
 
     new_site = frappe.new_doc("Supported Site")
     new_site.site_name = site_name
@@ -385,10 +389,11 @@ def remove_site(session_key, site_name):
 
     frappe.delete_doc("Supported Site", site_name, ignore_permissions=True)
 
+
 @frappe.whitelist(allow_guest=True)
 def get_site(session_key, site_name):
     agent = get_agent(session_key)
-    
+
     SupportedSite = frappe.qb.DocType("Supported Site")
     SupportedSiteUser = frappe.qb.DocType("Supported Site User")
     site = (
@@ -412,7 +417,7 @@ def get_site(session_key, site_name):
 
     site = site[0]
     return site
-    
+
 
 @frappe.whitelist(allow_guest=True)
 def get_sites(session_key):
