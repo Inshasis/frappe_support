@@ -4,7 +4,6 @@
 import frappe
 
 
-
 def get_or_create_session_key(email):
     session_key = frappe.db.get_value("Support Session", {"email": email}, "key")
     if not session_key:
@@ -69,6 +68,12 @@ def validate_user(email, site):
 def register_user(**kwargs):
     args = frappe._dict(kwargs)
     try:
+        site_exists = frappe.db.exists("Supported Site", args.site)
+        if site_exists:
+            registered = auto_register_user(args)
+            if registered:
+                return
+
         frappe.session.user = "Administrator"
 
         issue = frappe.new_doc("Issue")
@@ -109,8 +114,25 @@ def register_user(**kwargs):
         communication.insert(ignore_permissions=True)
     except Exception:
         frappe.log_error()
+        raise
     finally:
         frappe.session.user = "Guest"
+
+
+def auto_register_user(args):
+    # TODO: send a request to site_url with email and password to verify validity
+    site = frappe.get_doc("Supported Site", args.site)
+    site.append("support_users", {"email": args.email, "disabled": 0})
+    site.save(ignore_permissions=True)
+    key_sent = send_session_key(args.email)
+    if not key_sent:
+        return False
+    frappe.msgprint(
+        """A verification email has been sent to your email address.
+        Please click on the link in the email to start your support session.""",
+        title="Verification Email Sent",
+    )
+    return True
 
 
 @frappe.whitelist(allow_guest=True)
