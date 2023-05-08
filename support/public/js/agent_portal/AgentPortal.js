@@ -41,6 +41,21 @@ const utils = {
 	},
 	get_session_key: () => localStorage.getItem("support-agent-key"),
 
+	use_storage: (key, default_value) => {
+		const stored_value = localStorage.getItem(key);
+		const value = stored_value ? JSON.parse(stored_value) : default_value;
+		const state = Vue.ref(value);
+		Vue.watch(
+			state,
+			(new_value) => {
+				state.value = new_value;
+				localStorage.setItem(key, JSON.stringify(new_value));
+			},
+			{ immediate: true, deep: true }
+		);
+		return state;
+	},
+
 	validate_session_key(session_key) {
 		return frappe.call({
 			method: utils.get_api_url("login"),

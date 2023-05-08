@@ -103,7 +103,7 @@ const template = /*html*/ `
 </div>
 `;
 
-const { reactive, toRefs, inject, computed } = Vue;
+const { toRefs, inject, computed } = Vue;
 export default {
 	name: "AgentTickets",
 	template: template,
@@ -113,11 +113,11 @@ export default {
 		const app = inject("app");
 
 		const agent = computed(() => app.agent);
-		const state = reactive({
-			search_text: "",
-			status_filter: "Open",
-			assignment_filter: "me",
-		});
+    const state = utils.use_storage("agent_tickets", {
+      search_text: "",
+      status_filter: "Open",
+      assignment_filter: "me",
+    });
 
 		const tickets = computed(() => {
 			if (!agent.value.tickets) return [];
@@ -134,13 +134,13 @@ export default {
 				})
 				.filter((ticket) => {
 					const conditions = [true];
-					if (state.status_filter === "Open") {
+					if (state.value.status_filter === "Open") {
 						conditions.push(ticket.status !== "Closed");
 					}
-					if (state.status_filter === "Close") {
+					if (state.value.status_filter === "Close") {
 						conditions.push(ticket.status === "Closed");
 					}
-					if (state.assignment_filter === "me") {
+					if (state.value.assignment_filter === "me") {
 						conditions.push(ticket.assignees.includes(agent.value.email));
 					}
 					return conditions.every(Boolean);
@@ -150,7 +150,7 @@ export default {
 		return {
 			agent,
 			tickets,
-			...toRefs(state),
+			...toRefs(state.value),
 			logout: () => app.logout(),
 		};
 	},
