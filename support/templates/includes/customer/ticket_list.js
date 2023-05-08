@@ -3,7 +3,7 @@ args.key = localStorage.getItem("support-key");
 
 if (args.key == null) {
   frappe.toast("Session Expired");
-  window.location.href = "/support/portal";
+  window.location.href = "/support/portal/customer";
 }
 
 // ?show=Open or ?show=All
@@ -23,21 +23,21 @@ $(".input-search").change(function () {
 
 $(".link-logout").on("click", () => {
   localStorage.removeItem("support-key");
-  frappe.call("support-logout", args, (r) => {
-    if (r.deleted === "True") {
-      window.location.href = "/support/portal";
+  frappe.call("support.www.support.portal.delete_session_key", { key: args.key })
+    .then(() => {
+      window.location.href = "/support/portal/customer";
       frappe.toast("You are logged out.");
-    } else {
-      frappe.toast("Log out failed.");
-    }
-  });
+    }).catch((e) => {
+      console.log(e);
+      frappe.toast("Something went wrong.");
+    });
 });
 
 function get_issues(args) {
   frappe.call("support.www.support.portal.get_issues", args, (r) => {
     if (r.message.error == "Invalid Session") {
       frappe.toast("Invalid Session");
-      window.location.href = "/support/portal";
+      window.location.href = "/support/portal/customer";
       return;
     }
 

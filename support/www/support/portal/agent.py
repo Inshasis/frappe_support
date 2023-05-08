@@ -433,3 +433,8 @@ def get_sites(session_key):
         .run(as_dict=True)
     )
     return sites
+
+
+@frappe.whitelist(allow_guest=True)
+def clear_session_key(session_key):
+    return delete_session_key(session_key)

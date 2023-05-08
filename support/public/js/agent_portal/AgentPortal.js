@@ -186,6 +186,15 @@ const utils = {
 			})
 			.then((res) => res.message);
 	},
+
+	clear_session_key(session_key) {
+		return frappe
+			.call({
+				method: utils.get_api_url("clear_session_key"),
+				args: { session_key },
+			})
+			.then((res) => res.message);
+	},
 };
 
 function get_session_key() {
@@ -277,6 +286,7 @@ export default {
 		state.logout = function () {
 			state.session_key = null;
 			utils.store_session_key();
+			utils.clear_session_key();
 			router.push({ name: "login" });
 		};
 

@@ -4,13 +4,13 @@ key = localStorage.getItem("support-key");
 function validate_session() {
   if (!key) {
     frappe.msgprint("Please login to view this page");
-    window.location.href = "/support/portal";
+    window.location.href = "/support/portal/customer";
     return;
   }
   return frappe.call(
     "support.www.support.portal.validate_session_key",
     { key: key },
-    (r) => !r.message && (window.location.href = "/support/portal")
+    (r) => !r.message && (window.location.href = "/support/portal/customer")
   );
 }
 function load_ticket() {
@@ -20,7 +20,7 @@ function load_ticket() {
     (r) => {
       if (!r.message || r.message.error) {
         frappe.msgprint(r.message.error || "Invalid ticket");
-        window.location.href = "/support/portal";
+        window.location.href = "/support/portal/customer";
         return;
       }
       update_html(r.message);
