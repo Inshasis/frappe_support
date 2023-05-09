@@ -123,6 +123,10 @@ function get_stars() {
 
   $("body").on("click", ".btn-submit-close", () => {
     let args = get_args(false);
+    // check if rating is given
+    if (!frappe.support_rating) {
+      return frappe.toast("Please give a rating");
+    }
     args.support_rating = frappe.support_rating;
     frappe.call("support.www.support.portal.close_issue", args, () => {
       window.location.reload();
