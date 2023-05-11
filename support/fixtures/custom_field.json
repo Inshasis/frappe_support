@@ -60,6 +60,7 @@
     "insert_after": "site_name",
     "length": 0,
     "fieldtype": "Link",
+    "fetch_from": "site_name.support_provider",
     "precision": "",
     "hide_seconds": 0,
     "hide_days": 0,
