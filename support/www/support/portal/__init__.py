@@ -2,6 +2,7 @@
 # GNU GPLv3 License. See license.txt
 
 import frappe
+from frappe.utils.data import get_url
 
 
 def get_or_create_session_key(email):
@@ -15,16 +16,17 @@ def get_or_create_session_key(email):
     return session_key
 
 
-def send_session_key_email(email, session_key):
+def send_session_key_email(email, session_key, for_agent=False):
     if not frappe.conf.get("developer_mode"):
+        base_url = '/support/portal/agent' if for_agent else '/support/portal/customer'
+        link = get_url(f"""{base_url}?key={session_key}""")
         frappe.sendmail(
             recipients=[email],
             subject="Frappe Support: Verify your email",
-            message="""<h3>Welcome to Frappe Support!</h3>
+            message=f"""<h3>Welcome to Frappe Support!</h3>
             <p>Please click on the link below to start your support session</p>
-            <p><a href="https://frappe.io/support?key=%s">Start your support session</a></p>
-            """
-            % session_key,
+            <p><a href="{link}">Start your support session</a></p>
+            """,
             now=True,
         )
 

@@ -58,7 +58,7 @@ const template = /*html*/ `
 			<span>Add Site</span>
 		</a>
 	</div>
-	<div v-if="!sites.length" class="frappe-card p-0">
+	<div v-if="state.loading_sites" class="frappe-card p-0">
 		<div class="text-center" style="padding: 5rem">Fetching...</div>
 	</div>
 	<div v-else class="frappe-card p-0 w-full" style="overflow-y: auto; overflow-x: hidden; min-height: 16rem">
@@ -108,14 +108,17 @@ export default {
 		const state = reactive({
 			agents: [],
 			sites: [],
+			loading_sites: true,
 		});
 
 		utils.fetch_agents(app.session_key).then((agents) => {
 			state.agents = agents;
 		});
 
+		state.loading_sites = true;
 		utils.fetch_sites(app.session_key).then((sites) => {
 			state.sites = sites;
+			state.loading_sites = false;
 		});
 
 		function show_add_agent_modal() {

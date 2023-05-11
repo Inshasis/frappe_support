@@ -148,7 +148,7 @@ def add_agent(session_key, new_agent):
 
     agent_doc = frappe.get_doc("Support Provider Team", agent.team)
     agent_doc.append("members", {"user": email})
-    agent_doc.save()
+    agent_doc.save(ignore_permissions=True)
 
     return get_agent(session_key, email, with_tickets=False)
 
