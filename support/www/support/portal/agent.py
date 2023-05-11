@@ -263,6 +263,8 @@ def reply_to_ticket(session_key, issue_name, content):
         )
 
     issue = frappe.get_doc("Issue", issue_name)
+    old_user = frappe.session.user
+    frappe.set_user("Administrator")
     comm = create_communication(
         recipients=issue.raised_by,
         subject=f"Re: {issue.subject}",
@@ -278,6 +280,7 @@ def reply_to_ticket(session_key, issue_name, content):
         print_letterhead=1,
         send_email=0 if frappe.conf.developer_mode else 1,
     )
+    frappe.set_user(old_user)
     reply = frappe.db.get_value(
         "Communication",
         comm.get("name"),
