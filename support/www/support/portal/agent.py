@@ -171,7 +171,7 @@ def remove_agent(session_key, email):
         if member.user == email:
             agent_doc.remove(member)
             break
-    agent_doc.save()
+    agent_doc.save(ignore_permissions=True)
 
 
 @frappe.whitelist(allow_guest=True)
@@ -357,7 +357,7 @@ def set_status(session_key, issue_name, status):
 
     issue = frappe.get_doc("Issue", issue_name)
     issue.status = status
-    issue.save()
+    issue.save(ignore_permissions=True)
     return issue.status
 
 
