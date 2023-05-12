@@ -72,7 +72,8 @@ function set_sla(issue) {
 
 let get_args = (validate = true) => {
   if (validate && !$(".input-reply").text()) {
-    return frappe.toast({ message: "Please add a reply", indicator: "red" });
+    frappe.toast({ message: "Please add a reply", indicator: "red" });
+    return;
   }
   let args = {
     issue: $(".issue-name").html(),
