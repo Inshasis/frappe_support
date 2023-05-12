@@ -342,6 +342,8 @@ def reply(**kwargs):
     email = get_user_email(args.key)
     site_list = get_site_list(email)
 
+    old_user = frappe.session.user
+    frappe.set_user("Administrator")
     communication = frappe.get_doc(
         dict(
             doctype="Communication",
@@ -356,6 +358,7 @@ def reply(**kwargs):
         )
     )
     communication.insert(ignore_permissions=True)
+    frappe.set_user(old_user)
 
     return get_replies(args.issue)
 
