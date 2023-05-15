@@ -30,7 +30,7 @@ def send_login_link(email):
         )
 
     session_key = get_or_create_session_key(email)
-    send_session_key_email(email, session_key)
+    send_session_key_email(email, session_key, for_agent=True)
 
 
 @frappe.whitelist(allow_guest=True)

@@ -18,7 +18,7 @@ def get_or_create_session_key(email):
 
 def send_session_key_email(email, session_key, for_agent=False):
     if not frappe.conf.get("developer_mode"):
-        base_url = '/support/portal/agent' if for_agent else '/support/portal/customer'
+        base_url = "/support/portal/agent" if for_agent else "/support/portal/customer"
         link = get_url(f"""{base_url}?key={session_key}""")
         frappe.sendmail(
             recipients=[email],
@@ -42,8 +42,11 @@ def send_session_key(email):
 
 
 @frappe.whitelist(allow_guest=True)
-def validate_session_key(key):
-    return frappe.db.get_value("Support Session", {"key": key}, "email")
+def validate_session_key(key, for_agent=False):
+    session_user_email = frappe.db.get_value("Support Session", {"key": key}, "email")
+    if for_agent:
+        return frappe.db.get_value("Support Team Member", {"user": session_user_email}, "user")
+    return frappe.db.get_value("Supported Site User", {"email": session_user_email}, "email")
 
 
 @frappe.whitelist(allow_guest=True)
