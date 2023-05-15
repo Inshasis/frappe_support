@@ -58,7 +58,7 @@ const template = /*html*/ `
 			<span>Add Site</span>
 		</a>
 	</div>
-	<div v-if="state.loading_sites" class="frappe-card p-0">
+	<div v-if="loading_sites" class="frappe-card p-0">
 		<div class="text-center" style="padding: 5rem">Fetching...</div>
 	</div>
 	<div v-else class="frappe-card p-0 w-full" style="overflow-y: auto; overflow-x: hidden; min-height: 16rem">
