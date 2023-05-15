@@ -44,6 +44,8 @@ def send_session_key(email):
 @frappe.whitelist(allow_guest=True)
 def validate_session_key(key, for_agent=False):
     session_user_email = frappe.db.get_value("Support Session", {"key": key}, "email")
+    if not session_user_email:
+        return False
     if for_agent:
         return frappe.db.get_value("Support Team Member", {"user": session_user_email}, "user")
     return frappe.db.get_value("Supported Site User", {"email": session_user_email}, "email")
