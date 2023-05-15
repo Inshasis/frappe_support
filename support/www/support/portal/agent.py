@@ -35,7 +35,7 @@ def send_login_link(email):
 
 @frappe.whitelist(allow_guest=True)
 def get_agents(session_key):
-    email = validate_session_key(session_key)
+    email = validate_session_key(session_key, for_agent=True)
     if not email:
         frappe.throw("Invalid Session Key")
 
@@ -66,7 +66,7 @@ def get_agents(session_key):
 
 @frappe.whitelist(allow_guest=True)
 def get_agent(session_key, agent_email=None, with_tickets=True):
-    email = validate_session_key(session_key)
+    email = validate_session_key(session_key, for_agent=True)
     if not email:
         frappe.throw("Invalid Session Key")
 
