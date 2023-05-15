@@ -44,6 +44,16 @@ def get_agents(session_key):
     SupportTeamMember = frappe.qb.DocType("Support Team Member")
     User = frappe.qb.DocType("User")
 
+    support_provider_team = (
+        frappe.qb.from_(SupportProvider)
+        .inner_join(SupportProviderTeam)
+        .on(SupportProvider.name == SupportProviderTeam.support_provider)
+        .inner_join(SupportTeamMember)
+        .on(SupportProviderTeam.name == SupportTeamMember.parent)
+        .where(SupportTeamMember.user == email)
+        .select(SupportProviderTeam.name.as_("team"))
+        .run(as_dict=True)
+    )
     agents = (
         frappe.qb.from_(SupportProvider)
         .inner_join(SupportProviderTeam)
@@ -52,6 +62,7 @@ def get_agents(session_key):
         .on(SupportProviderTeam.name == SupportTeamMember.parent)
         .inner_join(User)
         .on(SupportTeamMember.user == User.name)
+        .where(SupportProviderTeam.name == support_provider_team[0].team)
         .select(
             SupportProvider.name.as_("support_provider"),
             SupportProviderTeam.team_name.as_("team"),
