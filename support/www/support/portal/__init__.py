@@ -284,14 +284,13 @@ def create_issue(**kwargs):
             subject=args.subject,
             raised_by=email,
             site_name=site_name,
-            # bench_site=site_name,
-            # account=site_name,
-            # customer=customer,
-            # raised_via_portal=1,
-            # source="Support Portal",
-            # reference_document=args.ref_doc,
-            # reference_module=(args.ref_module).casefold(),
-            # reference_name=args.ref_name,
+            bench_site=site_name,
+            account=site_name,
+            raised_via_portal=1,
+            source="Partner Support Portal",
+            reference_document=args.ref_doc,
+            reference_module=(args.ref_module).casefold(),
+            reference_name=args.ref_name,
         )
     )
     issue.insert(ignore_permissions=True)
@@ -311,7 +310,8 @@ def create_issue(**kwargs):
     )
     communication.insert(ignore_permissions=True)
 
-    email_sla_info(issue)
+    if not frappe.conf.developer_mode:
+        email_sla_info(issue)
     return issue.name
 
 
