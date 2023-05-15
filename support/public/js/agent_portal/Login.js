@@ -1,10 +1,10 @@
 const template = /*html*/ `
   <div class="frappe-card p-5">
     <div v-if="!loginLinkSent">
-      <h3 class="mb-3 mt-0">Agent Login</h3>
+      <h3 class="mb-3 mt-0 text-2xl font-medium">Agent Login</h3>
       <p class="mb-3">
-        Welcome to Frappe Support, to manage your assigned tickets, please login
-        with your email id.
+        Welcome to Partner Support Portal. Please enter your email address to continue. If you
+				don't have an account, please contact us at <span class="underline">support@frappe.io</span>
       </p>
       <div class="d-flex">
         <input
@@ -27,7 +27,7 @@ const template = /*html*/ `
       </p>
     </div>
     <div v-else>
-      <h3 class="mb-1 mt-0">Login Link Sent</h3>
+      <h3 class="mb-1 mt-0 text-2xl font-medium">Login Link Sent</h3>
       <div class="alert alert-info small mt-3 mb-0">
         Please check your inbox for a confirmation email
       </div>

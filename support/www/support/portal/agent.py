@@ -25,7 +25,7 @@ def send_login_link(email):
     agent_exists = frappe.db.exists("Support Team Member", {"user": email})
     if not agent_exists:
         frappe.throw(
-            "You have not been registered as an agent. Reach out to your administrator to get registered.",
+            "You have not been registered as an agent. Please contact us on support@frappe.io",
             title="Not Registered",
         )
 
