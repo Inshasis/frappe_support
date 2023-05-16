@@ -2,6 +2,7 @@
 # GNU GPLv3 License. See license.txt
 
 import frappe
+from frappe.frappeclient import FrappeClient
 from frappe.utils.data import get_url
 
 
@@ -47,8 +48,12 @@ def validate_session_key(key, for_agent=False):
     if not session_user_email:
         return False
     if for_agent:
-        return frappe.db.get_value("Support Team Member", {"user": session_user_email}, "user")
-    return frappe.db.get_value("Supported Site User", {"email": session_user_email}, "email")
+        return frappe.db.get_value(
+            "Support Team Member", {"user": session_user_email}, "user"
+        )
+    return frappe.db.get_value(
+        "Supported Site User", {"email": session_user_email}, "email"
+    )
 
 
 @frappe.whitelist(allow_guest=True)
@@ -74,6 +79,11 @@ def validate_user(email, site):
 @frappe.whitelist(allow_guest=True)
 def register_user(**kwargs):
     args = frappe._dict(kwargs)
+    # remove https:// or http:// from site url and last slash
+    args.site = (args.site).replace("https://", "").replace("http://", "").rstrip("/")
+    if not frappe.conf.get("developer_mode"):
+        check_if_valid_user(args)
+
     try:
         site_exists = frappe.db.exists("Supported Site", args.site)
         if site_exists:
@@ -84,26 +94,14 @@ def register_user(**kwargs):
         frappe.session.user = "Administrator"
 
         issue = frappe.new_doc("Issue")
-        issue.subject = "New Support Portal User Registration - " + args.email
+        issue.subject = "Partner Support Portal User Registration - " + args.email
         issue.source = "Partner Support Portal"
         issue.insert(ignore_permissions=True)
 
         content = f"""
         <p>You have a new registration from {args.email}<p>
-        <p>User Name: {args.name}</p>
-        <p>Company Name: {args.company}</p>
         <p>Site URL: {args.site}</p>
         <p>
-        <br>
-        To register the user follow these steps:<br>
-        <ul>
-        <li>Check if the Site <b>contains</b> the User ID and the user is an <b>Enabled System User</b>.</li>
-        <li>If user not found or is an invalid user, reply to them accordingly.</li>
-        <li>If user found, Create the <a style="text-decoration: underline;" href="https://frappe.io/app/support-profile">Support Profile</a> Entry for the Site URL, if Profile already exists, just add a new row with Email ID.</li>
-        <li>While creating a <b>new</b> support profile entry, support plan expiry and user limit can be found in ERPNext Support User.</li>
-        <li>A Contact will be auto created for the user. Check if there exists a contact associated with the User ID after saving the Profile.</li>
-        <li>Once Contact and Profile is created, reply to the user email to update them that the verification process completed.</li>
-        </ul>
         </p>"""
 
         communication = frappe.get_doc(
@@ -126,9 +124,18 @@ def register_user(**kwargs):
     finally:
         frappe.session.user = "Guest"
 
+def check_if_valid_user(args):
+    url = f"https://{args.site}"
+    try:
+        client = FrappeClient(url, args.email, args.password)
+        client.get_api("ping")
+    except BaseException:
+        frappe.throw(
+            "The site URL, email or password is incorrect. Please check and try again.",
+            title="Invalid Credentials",
+        )
 
 def auto_register_user(args):
-    # TODO: send a request to site_url with email and password to verify validity
     site = frappe.get_doc("Supported Site", args.site)
     site.append("support_users", {"email": args.email, "disabled": 0})
     site.save(ignore_permissions=True)

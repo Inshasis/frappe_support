@@ -5,11 +5,10 @@ $(".btn-register").on("click", () => {
   $(".btn-register").prop("disabled", true);
   let args = {
     email: $(".input-email").val(),
-    name: $(".input-name").val(),
-    company: $(".input-company").val(),
+    password: $(".input-password").val(),
     site: $(".input-site").val(),
   };
-  if (!(args.company && args.site && args.name)) {
+  if (!(args.email && args.password && args.site)) {
     return frappe.toast("All fields are mandatory.");
   }
   frappe.call(
