@@ -333,7 +333,8 @@ def toggle_assignee(session_key, issue_name, assignee):
         )
 
     issue = issue[0]
-    if assignee not in issue.get("_assign", []):
+    assignees = issue.get("_assign") or []
+    if assignee not in assignees:
         add_assign(
             {
                 "assign_to": [assignee],
