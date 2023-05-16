@@ -1,5 +1,9 @@
 {% extends "templates/base.html" %}
 
+{% block head_include %}
+<script src="/assets/support/js/tinymce.min.js"></script>
+{% endblock %}
+
 {% block title %}
 	{% if view=="login" %}
 		Login - Frappe Support

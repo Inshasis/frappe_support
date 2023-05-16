@@ -1,6 +1,13 @@
 issue_name = window.location.href.split("/").slice(-1)[0];
 key = localStorage.getItem("support-key");
 
+tinymce.init({
+  selector: '#reply_content',
+  toolbar: false,
+  menubar: false,
+  inline: true
+});
+
 function validate_session() {
   if (!key) {
     frappe.msgprint("Please login to view this page");
@@ -71,14 +78,15 @@ function set_sla(issue) {
 }
 
 let get_args = (validate = true) => {
-  if (validate && !$(".input-reply").text()) {
+  const content = tinymce.get('reply_content').getContent();
+  if (validate && !content) {
     frappe.toast({ message: "Please add a reply", indicator: "red" });
     return;
   }
   let args = {
     issue: $(".issue-name").html(),
     subject: $(".subject").html(),
-    content: $(".input-reply").html(),
+    reply: {content},
     key: localStorage.getItem("support-key"),
   };
   return args;
@@ -89,7 +97,7 @@ $(".btn-reply").on("click", () => {
   if (args) {
     frappe.call("support.www.support.portal.reply", args, (data) => {
       // refresh replies
-      $(".input-reply").empty();
+      tinymce.get('reply_content').setContent('');
       $(".replies").empty();
       set_replies({ replies: data.message });
     });

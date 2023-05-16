@@ -347,6 +347,7 @@ def reply(**kwargs):
     email = get_user_email(args.key)
     site_list = get_site_list(email)
 
+    content = frappe.parse_json(args.reply).get("content")
     old_user = frappe.session.user
     frappe.set_user("Administrator")
     communication = frappe.get_doc(
@@ -358,7 +359,7 @@ def reply(**kwargs):
             reference_name=args.issue,
             sent_or_received="Received",
             sender=email,
-            content=args.content,
+            content=content,
             subject=args.subject,
         )
     )

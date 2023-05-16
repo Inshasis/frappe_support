@@ -124,11 +124,11 @@ const utils = {
 			.then((res) => res.message);
 	},
 
-	reply_to_ticket(session_key, ticket, content) {
+	reply_to_ticket(session_key, ticket, reply) {
 		return frappe
 			.call({
 				method: utils.get_api_url("reply_to_ticket"),
-				args: { session_key, issue_name: ticket, content },
+				args: { session_key, issue_name: ticket, reply },
 			})
 			.then((res) => res.message);
 	},
@@ -274,7 +274,7 @@ export default {
 				.then((agent) => {
 					state.agent = agent;
 					state.initializing = false;
-					router.push({ name: router.route.name });
+					router.push(router.route);
 				})
 				.catch((err) => {
 					console.error(err);

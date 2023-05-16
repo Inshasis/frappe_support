@@ -49,8 +49,9 @@ const template = /*html*/ `
 		<div class="issue-body p-5">
 			<div
 				ref="reply_content"
+				id="reply_content"
 				contenteditable="true"
-				class="form-control input-reply"
+				class="form-control p-2"
 				style="min-height: 8rem; overflow: auto"
 				placeholder="Add a reply..."
 			></div>
@@ -97,8 +98,8 @@ const template = /*html*/ `
 						<span>&#149;</span>
 						<span class='text-muted text-sm'> {{reply.creation_from_now}} </span>
 					</div>
-					<div class="text-sm text-gray-700">
-						<p>{{reply.content}}</p>
+					<div class="text-sm text-gray-700 prose prose-sm">
+						<p v-html="reply.content"></p>
 					</div>
 				</div>
 			</div>
@@ -107,7 +108,7 @@ const template = /*html*/ `
 </div>
 `;
 
-const { reactive, toRefs, inject, computed, ref } = Vue;
+const { reactive, toRefs, inject, computed, ref, onMounted } = Vue;
 export default {
 	name: "Ticket",
 	template: template,
@@ -124,6 +125,15 @@ export default {
 			ticket: { name: ticket },
 			statuses: ["Open", "Replied", "Closed"],
 		});
+
+		onMounted(() => {
+			tinymce.init({
+				selector: '#reply_content',
+				toolbar: false,
+				menubar: false,
+				inline: true
+			});
+		})
 
 		utils.fetch_agents(app.session_key).then((agents) => {
 			state.agents = agents;
@@ -208,16 +218,16 @@ export default {
 
 		const reply_content = ref(null);
 		function reply() {
-			const content = reply_content.value.innerText;
+			const content = tinymce.get('reply_content').getContent();
 			if (!content) return;
 			utils
-				.reply_to_ticket(app.session_key, ticket, content)
+				.reply_to_ticket(app.session_key, ticket, { content })
 				.then((reply) => {
 					console.log(reply);
 					reply.bg_color = "var(--blue-50)";
 					reply.creation_from_now = utils.get_time_ago(reply.creation);
 					state.ticket.replies = [reply, ...state.ticket.replies];
-					reply_content.value.innerText = "";
+					tinymce.get('reply_content').setContent('');
 				})
 				.catch((err) => {
 					console.log(err);

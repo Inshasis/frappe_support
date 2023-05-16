@@ -23,29 +23,29 @@ export default function router(routes) {
 		component: current_route.component,
 	});
 
-	function push({ name, params }) {
+	function push({ name, props }) {
 		const matching_routes = routes.filter((route) => route.name === name);
 		if (!matching_routes.length)
 			throw new Error(`Route not found: ${name} ${path}`);
 
 		// check if there is a query string
 		let route = undefined;
-		if (params) {
+		if (props) {
 			route = matching_routes.find(
 				(route) =>
 					route.props?.length &&
-					Object.keys(params).every((key) => route.props.includes(key))
+					Object.keys(props).every((key) => route.props.includes(key))
 			);
 		}
 		if (!route) route = matching_routes[0];
 
 		const base_path = route.path.split("?")[0];
-		const url = params
-			? `${base_path}?${new URLSearchParams(params)}`
+		const url = props
+			? `${base_path}?${new URLSearchParams(props)}`
 			: base_path;
 		window.history.pushState({}, "", url);
 		state.name = route.name;
-		state.props = params;
+		state.props = props;
 		state.component = route.component;
 	}
 

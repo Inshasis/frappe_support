@@ -61,7 +61,7 @@ const template = /*html*/ `
       :key="ticket.name"
       style="cursor: pointer"
       class='border-bottom'
-      :to="{ name: 'ticket', params: { ticket: ticket.name } }"
+      :to="{ name: 'ticket', props: { ticket: ticket.name } }"
     >
       <div class='d-flex justify-content-between p-3'>
           <div class="flex flex-col">

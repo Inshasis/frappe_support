@@ -255,7 +255,7 @@ def get_replies(issue_name):
 
 
 @frappe.whitelist(allow_guest=True)
-def reply_to_ticket(session_key, issue_name, content):
+def reply_to_ticket(session_key, issue_name, reply):
     agent = get_agent(session_key)
     Issue = frappe.qb.DocType("Issue")
     issue = (
@@ -273,6 +273,8 @@ def reply_to_ticket(session_key, issue_name, content):
             title="No Access",
         )
 
+    # sending content inside an objecy to avoid sanitization
+    content = frappe.parse_json(reply).get("content")
     issue = frappe.get_doc("Issue", issue_name)
     old_user = frappe.session.user
     frappe.set_user("Administrator")
@@ -331,7 +333,7 @@ def toggle_assignee(session_key, issue_name, assignee):
         )
 
     issue = issue[0]
-    if assignee not in issue._assign:
+    if assignee not in issue.get("_assign", []):
         add_assign(
             {
                 "assign_to": [assignee],
