@@ -74,10 +74,10 @@ const template = /*html*/ `
 					<button class="btn btn-sm small btn-reply" @click="reply">Reply</button>
 				</div>
 				<div class="flex items-center space-x-1">
-					<span class="text-muted text-sm">Response </span>
+					<span class="text-muted text-sm">Response: </span>
 					<span class="text-muted text-sm">{{ticket.response_status}}</span>
 					<span>&#149;</span>
-					<span class="text-muted text-sm">Resolution </span>
+					<span class="text-muted text-sm">Resolution: </span>
 					<span class="text-muted text-sm">{{ticket.resolution_status}}</span>
 				</div>
 			</div>
@@ -160,6 +160,7 @@ export default {
 			});
 
 		function set_sla_details() {
+			if (state.ticket.status == "Closed") return;
 			const ticket = state.ticket;
 			const now = moment();
 			const response_by = moment(ticket.response_by);
@@ -209,10 +210,10 @@ export default {
 				ticket.resolution_status = `${ticket.resolution_status} by ${ticket.resolution_time}`;
 			}
 			if (ticket.response_status == "On Time") {
-				ticket.response_status = `${ticket.response_status} (${ticket.response_time})`;
+				ticket.response_status = `${ticket.response_status} (${ticket.response_time} Left)`;
 			}
 			if (ticket.resolution_status == "On Time") {
-				ticket.resolution_status = `${ticket.resolution_status} (${ticket.resolution_time})`;
+				ticket.resolution_status = `${ticket.resolution_status} (${ticket.resolution_time} Left)`;
 			}
 		}
 
