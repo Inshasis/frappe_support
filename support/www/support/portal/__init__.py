@@ -85,6 +85,7 @@ def register_user(**kwargs):
 
         issue = frappe.new_doc("Issue")
         issue.subject = "New Support Portal User Registration - " + args.email
+        issue.source = "Partner Support Portal"
         issue.insert(ignore_permissions=True)
 
         content = f"""
