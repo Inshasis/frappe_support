@@ -177,7 +177,8 @@ def remove_agent(session_key, email):
         frappe.throw("Agent does not exist.")
 
     user = frappe.get_doc("User", email)
-    user.remove_roles("Support Provider")
+    with admin_session():
+        user.remove_roles("Support Provider")
     agent_doc = frappe.get_doc("Support Provider Team", agent.team)
     for member in agent_doc.members:
         if member.user == email:
