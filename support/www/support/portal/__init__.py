@@ -429,8 +429,10 @@ def close_issue(**kwargs):
         issue.add_comment(text=args.content, comment_email=email)
 
 
-def admin_session():
-    old_user = frappe.session.user
-    frappe.set_user("Administrator")
-    yield
-    frappe.set_user(old_user)
+class admin_session:
+    def __enter__(self):
+        self.old_user = frappe.session.user
+        frappe.set_user("Administrator")
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        frappe.set_user(self.old_user)
