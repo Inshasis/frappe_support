@@ -408,7 +408,11 @@ def remove_site(session_key, site_name):
     if site.support_provider != agent.support_provider:
         frappe.throw("You do not have access to this site.")
 
-    frappe.delete_doc("Supported Site", site_name, ignore_permissions=True)
+    site = frappe.get_doc("Supported Site", site_name)
+    site.support_provider = ""
+    site.add_comment("Comment", "Site removed by support provider.")
+    site.flags.ignore_mandatory = True
+    site.save(ignore_permissions=True)
 
 
 @frappe.whitelist(allow_guest=True)
