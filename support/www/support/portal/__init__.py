@@ -124,6 +124,7 @@ def register_user(**kwargs):
     finally:
         frappe.session.user = "Guest"
 
+
 def check_if_valid_user(args):
     url = f"https://{args.site}"
     try:
@@ -134,6 +135,7 @@ def check_if_valid_user(args):
             "The site URL, email or password is incorrect. Please check and try again.",
             title="Invalid Credentials",
         )
+
 
 def auto_register_user(args):
     site = frappe.get_doc("Supported Site", args.site)
@@ -301,7 +303,8 @@ def create_issue(**kwargs):
             reference_name=args.ref_name,
         )
     )
-    issue.insert(ignore_permissions=True)
+    with admin_session():
+        issue.insert(ignore_permissions=True)
 
     communication = frappe.get_doc(
         dict(
@@ -419,7 +422,15 @@ def close_issue(**kwargs):
         issue.closed_by = email
     issue.status = "Closed"
     issue.support_rating = args.support_rating
-    issue.save(ignore_permissions=True)
+    with admin_session():
+        issue.save(ignore_permissions=True)
 
     if args.content:
         issue.add_comment(text=args.content, comment_email=email)
+
+
+def admin_session():
+    old_user = frappe.session.user
+    frappe.set_user("Administrator")
+    yield
+    frappe.set_user(old_user)

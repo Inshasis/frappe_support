@@ -7,11 +7,23 @@ from frappe.model.document import Document
 
 class SupportProviderTeam(Document):
     def on_update(self):
+        old_user = frappe.session.user
+        frappe.set_user("Administrator")
+
+        rule_name = self.get_rule_name()
+        if rule_name:
+            rule = frappe.get_doc("Assignment Rule", rule_name)
+            rule.users = []
+            for member in self.members:
+                rule.append("users", {"user": member.user})
+            rule.save(ignore_permissions=True)
+            return
+
         self.create_assignment_rule()
 
+        frappe.set_user(old_user)
+
     def create_assignment_rule(self):
-        if self.get_rule_name():
-            return
         rule = frappe.new_doc("Assignment Rule")
         rule.name = f"{self.support_provider} - {self.name}"
         rule.document_type = "Issue"
@@ -25,8 +37,6 @@ class SupportProviderTeam(Document):
         rule.close_condition = 'status == "Closed"'
         rule.rule = "Round Robin"
         rule.users = []
-        for member in self.members:
-            rule.append("users", {"user": member.user})
         days = [
             "Monday",
             "Tuesday",
@@ -38,7 +48,7 @@ class SupportProviderTeam(Document):
         ]
         for day in days:
             rule.append("assignment_days", {"day": day})
-        rule.save()
+        rule.save(ignore_permissions=True)
 
     def get_rule_name(self):
         return frappe.db.get_value(

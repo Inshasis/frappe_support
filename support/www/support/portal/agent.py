@@ -7,6 +7,7 @@ from frappe.desk.form.assign_to import add as add_assign
 from frappe.desk.form.assign_to import remove as remove_assign
 from frappe.query_builder.functions import Count
 from support.www.support.portal import (
+    admin_session,
     delete_session_key,
     get_or_create_session_key,
     send_session_key_email,
@@ -334,18 +335,19 @@ def toggle_assignee(session_key, issue_name, assignee):
 
     issue = issue[0]
     assignees = issue.get("_assign") or []
-    if assignee not in assignees:
-        add_assign(
-            {
-                "assign_to": [assignee],
-                "doctype": "Issue",
-                "name": issue_name,
-                "description": issue.subject,
-            }
-        )
+    with admin_session():
+        if assignee not in assignees:
+            add_assign(
+                {
+                    "assign_to": [assignee],
+                    "doctype": "Issue",
+                    "name": issue_name,
+                    "description": issue.subject,
+                }
+            )
 
-    else:
-        remove_assign("Issue", issue_name, assignee)
+        else:
+            remove_assign("Issue", issue_name, assignee)
 
     return frappe.db.get_value("Issue", issue_name, "_assign")
 
@@ -371,7 +373,8 @@ def set_status(session_key, issue_name, status):
 
     issue = frappe.get_doc("Issue", issue_name)
     issue.status = status
-    issue.save(ignore_permissions=True)
+    with admin_session():
+        issue.save(ignore_permissions=True)
     return issue.status
 
 
