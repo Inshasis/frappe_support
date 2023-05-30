@@ -53,7 +53,7 @@ const template = /*html*/ `
 				contenteditable="true"
 				class="form-control p-2"
 				style="min-height: 8rem; overflow: auto"
-				placeholder="Add a reply..."
+				placeholder="&nbsp;&nbsp;Add a reply..."
 			></div>
 			<div class="text-muted my-2" style="font-size: 14px;">
 				To add images, drag and drop or copy+paste them in the description box

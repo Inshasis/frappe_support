@@ -1,3 +1,12 @@
+frappe.ready(() => {
+  tinymce.init({
+    selector: '#reply_content',
+    toolbar: false,
+    menubar: false,
+    inline: true
+  });
+});  
+
 frappe.call(
   "support.www.support.portal.get_site_options",
   { key: localStorage.getItem("support-key") },
@@ -12,10 +21,11 @@ frappe.call(
 );
 
 $(".btn-submit").on("click", () => {
+  const content = tinymce.get('reply_content').getContent();
   let args = {
     subject: $(".input-subject").val(),
     sitename: $(".input-site").val(),
-    description: $(".input-description").html(),
+    description: content,
     key: localStorage.getItem("support-key"),
     ref_doc: $(".ref-doctype").val(),
     ref_module: $(".ref-module").val(),

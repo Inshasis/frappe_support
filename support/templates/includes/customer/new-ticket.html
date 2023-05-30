@@ -17,11 +17,6 @@
   </div>
   <div class="my-5">
     <label style="font-size: 14px">Site</label>
-    <!-- <input
-			class="form-control input-sitename"
-			placeholder="e.g. example.erpnext.com"
-			required
-		/> -->
     <select class="form-control input-site">
       <option value="" selected>Select a site</option>
     </select>
@@ -29,10 +24,12 @@
   <div class="my-5">
     <label style="font-size: 14px">Description</label>
     <div
+      ref="reply_content"
+      id="reply_content"
       contenteditable="true"
-      class="form-control input-description"
+      class="form-control p-2"
       style="min-height: 20rem; overflow: auto"
-      data-ph="Describe your issue"
+      placeholder="&nbsp;&nbsp;Describe your issue..."
     ></div>
     <div class="text-muted my-1">
       To add images, drag and drop or copy+paste them in the description box
